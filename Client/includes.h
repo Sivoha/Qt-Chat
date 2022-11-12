@@ -19,5 +19,14 @@
 #include <QSsl>
 #include <QDebug>
 #include <QAction>
+#include <QPixmap>
+#include <QSet>
+#include <QList>
+#include <QSound>
+#include <QSettings>
+#include <QThread>
+#include <QDomDocument>
+#include <QDomElement>
+#include <QTextStream>
 
 #endif // INCLUDES_H

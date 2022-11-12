@@ -13,7 +13,10 @@ enum class Status {
     Disconnected
 };
 
-static QMap<Status, QString> statusToString{{Status::Online, "ONLINE"}, {Status::Idle, "IDLE"}, {Status::DoNotDisturb, "DONOTDISTURB"}};
+//static QSettings settings("D:/Documents/C++/Qt/Chat/Client/settings.ini", QSettings::IniFormat);
+
+static QMap<Status, QString> statusToString{{Status::Online, "ONLINE"}, {Status::Idle, "IDLE"}, {Status::DoNotDisturb, "DONOTDISTURB"}, {Status::Disconnected, "DISCONNECTED"}};
+static QMap<QString, Status> stringToStatus{{"ONLINE", Status::Online}, {"IDLE", Status::Idle}, {"DONOTDISTURB", Status::DoNotDisturb}, {"DISCONNECTED", Status::Disconnected}};
 
 namespace Ui {
 class Client;
@@ -31,6 +34,7 @@ private slots:
     void onNewMessageLineReturnPressed();
     void onConnectToServerButtonTriggered();
     void onDisconnectButtonTriggered();
+    void onSaveHistoryButtonTriggered();
     void onExitButtonTriggered();
     void onHelpButtonTriggered();
     void onUsernameSettingsButtonTriggered();
@@ -50,6 +54,15 @@ private:
     QCheckBox *statusIdleCheckBox;
     QCheckBox *statusDoNotDisturbCheckBox;
 
+    QSettings* settings;
+
+    QDomDocument* document;
+    QDomElement domElement;
+
+    QDomElement message(QDomDocument*, const QString&, const QString&, const QString&, const QString&);
+    QDomElement makeElement(QDomDocument*, const QString&, const QString&);
+
+    void setUpSocket();
     void connectToServer();
     void disconnectFromServer();
     void sendToServer(const QString&, const QString&);
@@ -61,7 +74,9 @@ private:
 
     void addStatusButtonToMenu(QCheckBox**, QWidgetAction**, const QString&, bool);
     void createUserInfoDialog(const QString&, const QString&, const QString&, const QString&);
-    void addLabelToUserInfoDialog(QLabel**, const int, const QString&, QBoxLayout*);
+    void addLabelToDialog(QLabel**, const int, const QString&, QBoxLayout*);
+
+    void saveMessageHistory(const QString&);
 
     QString boldCurrentTime();
 
@@ -70,11 +85,15 @@ private:
     Status userStatus;
     Status userStatusBeforeDisconnect;
 
+    QSet<QString> activeUsernames;
+
     QByteArray messageData;
     quint16 nextBlockSize;
 
-    QString serverIP = "127.0.0.5";
-    qint16 serverPort = 27910;
+    QSound* newMessageSound;
+
+    QString serverIP = "127.0.0.1";
+    quint16 serverPort = (quint16)45678;
 };
 
 #endif // CLIENT_H

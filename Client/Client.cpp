@@ -8,10 +8,41 @@ Client::Client(QWidget *parent) :
     this->setWindowTitle("Disconnected");
     ui->setupUi(this);
 
+    settings = new QSettings("D:/Documents/C++/Qt/Chat/Client/settings.ini", QSettings::IniFormat);
+
+    document = new QDomDocument("message-history");
+    domElement = document->createElement("message-history");
+    document->appendChild(domElement);
+
+    if (!settings->contains("SERVER/IP")) {
+        settings->setValue("SERVER/IP", "127.0.0.1");
+    }
+
+    if (!settings->contains("SERVER/PORT")) {
+        settings->setValue("SERVER/PORT", 45678);
+    }
+
+    if (!settings->contains("USER/STATUS")) {
+        settings->setValue("USER/STATUS", "ONLINE");
+    }
+
+    if (!settings->contains("USER/USERNAME")) {
+        settings->setValue("USER/USERNAME", "");
+    }
+
+    serverIP = settings->value("SERVER/IP", "").toString();
+    serverPort = settings->value("SERVER/PORT", "").toUInt();
+    userStatusBeforeDisconnect = stringToStatus[settings->value("USER/STATUS", "").toString()];
+    userStatus = Status::Disconnected;
+    username = settings->value("USER/USERNAME", "").toString();
+
+    ui->serverSettingsButton->setText("Server: " + serverIP + " " + QString::number(serverPort));
+
     connect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendMessageButtonClicked()));
     connect(ui->newMessageLine, SIGNAL(returnPressed()), this, SLOT(onNewMessageLineReturnPressed()));
     connect(ui->connectToServerButton, SIGNAL(triggered()), this, SLOT(onConnectToServerButtonTriggered()));
     connect(ui->disconnectButton, SIGNAL(triggered()), this, SLOT(onDisconnectButtonTriggered()));
+    connect(ui->saveHistoryButton, SIGNAL(triggered()), this, SLOT(onSaveHistoryButtonTriggered()));
     connect(ui->exitButton, SIGNAL(triggered()), this, SLOT(onExitButtonTriggered()));
     connect(ui->usernameSettingsButton, SIGNAL(triggered()), this, SLOT(onUsernameSettingsButtonTriggered()));
     connect(ui->serverSettingsButton, SIGNAL(triggered()), this, SLOT(onServerSettingsButtonTriggered()));
@@ -22,18 +53,19 @@ Client::Client(QWidget *parent) :
     ui->menubar->connect(helpAction, SIGNAL(triggered()), this, SLOT(onHelpButtonTriggered()));
 
     QWidgetAction *statusOnlineButton, *statusIdleButton, *statusDoNotDisturbButton;
-    addStatusButtonToMenu(&statusOnlineCheckBox, &statusOnlineButton, "Online", true);
-    addStatusButtonToMenu(&statusIdleCheckBox, &statusIdleButton, "Idle", false);
-    addStatusButtonToMenu(&statusDoNotDisturbCheckBox, &statusDoNotDisturbButton, "Do Not Disturb", false);
+    addStatusButtonToMenu(&statusOnlineCheckBox, &statusOnlineButton, "Online", userStatusBeforeDisconnect == Status::Online);
+    addStatusButtonToMenu(&statusIdleCheckBox, &statusIdleButton, "Idle", userStatusBeforeDisconnect == Status::Idle);
+    addStatusButtonToMenu(&statusDoNotDisturbCheckBox, &statusDoNotDisturbButton, "Do Not Disturb", userStatusBeforeDisconnect == Status::DoNotDisturb);
 
     connect(statusOnlineCheckBox, SIGNAL(clicked()), this, SLOT(onStatusOnlineButtonTriggered()));
     connect(statusIdleCheckBox, SIGNAL(clicked()), this, SLOT(onStatusIdleButtonTriggered()));
     connect(statusDoNotDisturbCheckBox, SIGNAL(clicked()), this, SLOT(onStatusDoNotDisturbButtonTriggered()));
 
     userSocket = new QSslSocket;
-    userStatus = Status::Disconnected;
-    userStatusBeforeDisconnect = Status::Online;
+
     nextBlockSize = 0;
+
+    newMessageSound = new QSound("D:/Documents/C++/Qt/Chat/Client/newmessagesound.wav");
 
     connect(userSocket, &QSslSocket::readyRead, this, &Client::slotReadyRead);
     connect(userSocket, SIGNAL(connected()), this, SLOT(slotConnected()));
@@ -50,12 +82,39 @@ QString Client::boldCurrentTime() {
     return "<b>" + QTime::currentTime().toString() + "</b>";
 }
 
+void Client::setUpSocket() {
+    QByteArray cert;
+
+    QFile file_cert("D:/Documents/C++/Qt/Chat/Client/server.crt");
+    if(file_cert.open(QIODevice::ReadOnly)){
+        cert = file_cert.readAll();
+        file_cert.close();
+    }
+    else{
+        qDebug() << file_cert.errorString();
+    }
+    QSslCertificate ssl_cert(cert);
+    QList<QSslError> l;
+    l << QSslError(QSslError::SelfSignedCertificate, ssl_cert);
+    userSocket->ignoreSslErrors(l);
+    QList<QSslCertificate> listCA;
+    listCA.append(ssl_cert);
+    QSslConfiguration conf;
+    conf.setCaCertificates(listCA);
+    userSocket->setSslConfiguration(conf);
+
+}
+
 void Client::connectToServer() {
     if (userStatus == Status::Disconnected) {
+//        setUpSocket();
+//
+        userStatus = userStatusBeforeDisconnect;
         userSocket->connectToHost(serverIP, serverPort);
-        if (!username.isEmpty()) {
-            sendToServer("USERNAME", username);
-        }
+//        userSocket->connectToHostEncrypted(serverIP, serverPort);
+//        if (!username.isEmpty()) {
+//            sendToServer("USERNAME", username);
+//        }
     } else {
         ui->messageBrowser->append(boldCurrentTime() + " You are already connected to" + serverIP + " " + QString::number(serverPort));
     }
@@ -64,6 +123,7 @@ void Client::connectToServer() {
 void Client::disconnectFromServer() {
     if (userStatus != Status::Disconnected) {
         userStatusBeforeDisconnect = userStatus;
+        settings->setValue("USER/STATUS", statusToString[userStatus]);
         userSocket->disconnectFromHost();
         setDisconnectedStatus();
         ui->messageBrowser->append(boldCurrentTime() + " Disconnected from" + serverIP + " " + QString::number(serverPort));
@@ -75,7 +135,13 @@ void Client::disconnectFromServer() {
 
 void Client::slotConnected() {
     userStatus = userStatusBeforeDisconnect;
-    sendToServer("STATUS", statusToString[userStatus]);
+    settings->setValue("USER/STATUS", statusToString[userStatus]);
+    if (!username.isEmpty()) {
+        sendToServer("USERNAME&STATUS", username + " " + statusToString[userStatus]);
+    } else {
+       sendToServer("STATUS", statusToString[userStatus]);
+    }
+
     updateWindowStatus();
     ui->serverSettingsButton->setText("Server: " + serverIP + " " + QString::number(serverPort));
     ui->messageBrowser->append(boldCurrentTime() + " Connected to" + serverIP + " " + QString::number(serverPort));
@@ -115,7 +181,7 @@ void Client::sendToServer(const QString& sendType, const QString& message) {
         out << quint16(messageData.size() - sizeof(quint16));
         userSocket->write(messageData);
         ui->newMessageLine->clear();
-    } else if (sendType == "USERNAME" || sendType == "STATUS" || sendType == "USERINFO") {
+    } else if (sendType == "USERNAME" || sendType == "STATUS" || sendType == "USERINFO" || sendType == "USERNAME&STATUS") {
         out << quint16(0) << sendType << message;
         out.device()->seek(0);
         out << quint16(messageData.size() - sizeof(quint16));
@@ -139,15 +205,22 @@ void Client::slotReadyRead() {
 
         QString inType;
         in >> inType;
-        qDebug() << "HERE " << inType;
         if (inType == "MESSAGE") {
             QString messageText;
+            QString senderIP;
             QString senderName;
             QTime messageTime;
 
-            in >> messageTime >> senderName >> messageText;
-            ui->messageBrowser->append("<b>" + messageTime.toString() + "</b> " + "<b>[" + senderName + "]</b> " + messageText);
+            in >> messageTime >> senderIP >> senderName >> messageText;
+            if (userStatus != Status::DoNotDisturb && senderName != username) {
+                newMessageSound->play();
+            }
+
+            ui->messageBrowser->append("<b>" + messageTime.toString() + "</b> " + "<b>[" + senderIP + " : " + senderName + "]</b> " + messageText);
             nextBlockSize = 0;
+
+            QDomElement newMessage = message(document, messageTime.toString(), senderIP, senderName, messageText);
+            domElement.appendChild(newMessage);
         } else if (inType == "USERLIST") {
             ui->userListWidget->clear();
             QString usernames;
@@ -155,8 +228,9 @@ void Client::slotReadyRead() {
             in >> usernames;
             QStringList userList = usernames.split(" ");
 
-            for (auto user : userList) {
+            for (const auto& user : userList) {
                 if (!user.isEmpty()) {
+                    activeUsernames.insert(user);
                     QListWidgetItem* userItem = new QListWidgetItem(user);
                     ui->userListWidget->addItem(userItem);
                 }
@@ -168,6 +242,8 @@ void Client::slotReadyRead() {
             QTime actionTime;
 
             in >> actionTime >> senderName >> action;
+            activeUsernames.insert(senderName);
+
             ui->messageBrowser->append("<b>" + actionTime.toString() + "</b> " + "<b>" + senderName + "</b> " + action);
             nextBlockSize = 0;
         } else if (inType == "USERNAME") {
@@ -175,6 +251,8 @@ void Client::slotReadyRead() {
             in >> newUsername;
             if (username.isEmpty()) {
                 username = newUsername;
+                settings->setValue("USER/USERNAME", username);
+                activeUsernames.insert(username);
             }
             nextBlockSize = 0;
         } else if (inType == "USERNAMECHANGE") {
@@ -183,8 +261,12 @@ void Client::slotReadyRead() {
             QString newName;
 
             in >> changeTime >> oldName >> newName;
-            ui->messageBrowser->append("<b>" + changeTime.toString() + "</b> " + "<b>" + oldName + "</b> " + "changed name to " + "<b>" + newName + "</b>");
+            if (activeUsernames.contains(oldName)) {
+                activeUsernames.remove(oldName);
+                activeUsernames.insert(newName);
+            }
 
+            ui->messageBrowser->append("<b>" + changeTime.toString() + "</b> " + "<b>" + oldName + "</b> " + "changed name to " + "<b>" + newName + "</b>");
             nextBlockSize = 0;
         } else if (inType == "USERINFO") {
             QString usernameInfo;
@@ -197,6 +279,35 @@ void Client::slotReadyRead() {
 
             nextBlockSize = 0;
         }
+    }
+}
+
+QDomElement Client::message(QDomDocument* domDoc, const QString& strTime, const QString& strIP, const QString& strName, const QString& strMessage) {
+    QDomElement domElement = makeElement(domDoc, "message", "");
+    domElement.appendChild(makeElement(domDoc, "time", strTime));
+    domElement.appendChild(makeElement(domDoc, "IP", strIP));
+    domElement.appendChild(makeElement(domDoc, "name", strName));
+    domElement.appendChild(makeElement(domDoc, "text", strMessage));
+
+    return domElement;
+}
+
+QDomElement Client::makeElement(QDomDocument* domDoc, const QString& strElementName, const QString& strText) {
+    QDomElement domElement = domDoc->createElement(strElementName);
+
+    if (!strText.isEmpty()) {
+        QDomText domText = domDoc->createTextNode(strText);
+        domElement.appendChild(domText);
+    }
+
+    return domElement;
+}
+
+void Client::saveMessageHistory(const QString& fileName) {
+    QFile file(fileName + ".xml");
+    if (file.open(QIODevice::WriteOnly)) {
+        QTextStream(&file) << document->toString();
+        file.close();
     }
 }
 
@@ -218,14 +329,77 @@ void Client::onDisconnectButtonTriggered() {
     disconnectFromServer();
 }
 
+void Client::   onSaveHistoryButtonTriggered() {
+    QBoxLayout* boxLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+    QBoxLayout* fileNameLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+
+    QLabel *fileNameLabel = new QLabel();
+    fileNameLabel->setText("File name:");
+    fileNameLayout->addWidget(fileNameLabel);
+
+    QLineEdit *fileNameLine = new QLineEdit();
+    fileNameLine->setText("MessageHistory");
+    fileNameLayout->addWidget(fileNameLine);
+
+    boxLayout->addLayout(fileNameLayout);
+
+    QDialog *modalDialog = new QDialog(this);
+    modalDialog->setModal(true);
+    modalDialog->setWindowTitle("Save history");
+    modalDialog->setMinimumWidth(220);
+
+    QPushButton *saveMessageHistoryButton = new QPushButton("Save");
+    boxLayout->addWidget(saveMessageHistoryButton);
+    connect(saveMessageHistoryButton, SIGNAL(clicked()), modalDialog, SLOT(accept()));
+
+    modalDialog->setLayout(boxLayout);
+
+    if (modalDialog->exec() == QDialog::Accepted) {
+        saveMessageHistory(fileNameLine->text());
+    }
+
+    delete modalDialog;
+}
 
 void Client::onExitButtonTriggered() {
     QApplication::quit();
 }
 
 void Client::onHelpButtonTriggered() {
-    helpDialog* help = new helpDialog();
-    help->show();
+    QBoxLayout* boxLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+    QBoxLayout* dataLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+    QBoxLayout* infoLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+
+    QPixmap authorPicture("D:/Documents/C++/Qt/Chat/Client/image.jpg");
+    QLabel *authorPictureLabel, *authorName, *buildDate, *buildVersion, *launchVersion;
+
+    authorPictureLabel = new QLabel();
+    authorPictureLabel->setPixmap(authorPicture);
+    authorPictureLabel->setFixedSize(200, 200);
+    authorPictureLabel->setScaledContents(true);
+
+    addLabelToDialog(&authorName, 18, "Author name: Andrey Sivokho", infoLayout);
+    addLabelToDialog(&buildDate, 18, "Build date: 10.11.2022", infoLayout);
+    addLabelToDialog(&buildVersion, 18, "Build Qt version: 5.15.2", infoLayout);
+    addLabelToDialog(&launchVersion, 18, "Launch Qt version: " + QString(qVersion()), infoLayout);
+
+    dataLayout->addWidget(authorPictureLabel);
+    dataLayout->addSpacing(20);
+    dataLayout->addLayout(infoLayout);
+
+    QDialog *modalDialog = new QDialog(this);
+    modalDialog->setMinimumWidth(200);
+    modalDialog->setWindowTitle("Help");
+
+    QPushButton *closeButton = new QPushButton("Close");
+    boxLayout->addLayout(dataLayout);
+    boxLayout->addWidget(closeButton);
+    connect(closeButton, SIGNAL(clicked()), modalDialog, SLOT(accept()));
+
+    modalDialog->setLayout(boxLayout);
+    modalDialog->setFixedSize(570, 250);
+    modalDialog->exec();
+    delete modalDialog;
 }
 
 void Client::onUsernameSettingsButtonTriggered() {
@@ -247,8 +421,15 @@ void Client::onUsernameSettingsButtonTriggered() {
 
     modalDialog->setLayout(boxLayout);
     if (modalDialog->exec() == QDialog::Accepted) {
-        username = usernameLine->text();
-        sendToServer("USERNAME", username);
+        if (!activeUsernames.contains(usernameLine->text()) && !usernameLine->text().isEmpty()) {
+            activeUsernames.remove(username);
+            activeUsernames.insert(usernameLine->text());
+            username = usernameLine->text();
+            sendToServer("USERNAME", username);
+            settings->setValue("USER/USERNAME", username);
+        } else if ((username != usernameLine->text() && activeUsernames.contains(usernameLine->text())) || usernameLine->text().isEmpty()) {
+            onUsernameSettingsButtonTriggered();
+        }
     }
 
     delete modalDialog;
@@ -291,7 +472,9 @@ void Client::onServerSettingsButtonTriggered() {
     if (modalDialog->exec() == QDialog::Accepted) {
         if (regex.exactMatch(IPLine->text())) {
             serverIP = IPLine->text();
-            serverPort = portSpinBox->value();
+            serverPort = (quint16)portSpinBox->value();
+            settings->setValue("SERVER/IP", serverIP);
+            settings->setValue("SERVER/PORT", QString::number(serverPort));
             ui->serverSettingsButton->setText("Server: " + serverIP + " " + QString::number(serverPort));
         } else {
             onServerSettingsButtonTriggered();
@@ -324,6 +507,7 @@ void Client::updateStatusCheckBoxes(Status newStatus) {
 
 void Client::updateUserStatus(Status newStatus) {
     userStatusBeforeDisconnect = newStatus;
+    settings->setValue("USER/STATUS", statusToString[newStatus]);
     if (userStatus != Status::Disconnected) {
         userStatus = newStatus;
         updateWindowStatus();
@@ -341,19 +525,21 @@ void Client::onUserItemClicked(QPoint pos) {
 void Client::addStatusButtonToMenu(QCheckBox** checkBox, QWidgetAction** widgetAction, const QString& checkBoxText, bool isChecked) {
     *checkBox = new QCheckBox(ui->menuStatus);
     (*checkBox)->setText(checkBoxText);
+//    (*checkBox)->setIcon(QPixmap(checkBoxIcon));
     (*checkBox)->setChecked(isChecked);
     *widgetAction = new QWidgetAction(ui->menuStatus);
     (*widgetAction)->setDefaultWidget(*checkBox);
     ui->menuStatus->addAction(*widgetAction);
+//    ui->menuStatus->setIcon(QPixmap(checkBoxIcon));
 }
 
 void Client::createUserInfoDialog(const QString& usernameInfo, const QString& userIPInfo, const QString& userConnectionTimeInfo, const QString& userStatusInfo) {
     QBoxLayout* boxLayout = new QBoxLayout(QBoxLayout::TopToBottom);
 
     QLabel *IPLabel, *connectionLabel, *statusLabel;
-    addLabelToUserInfoDialog(&IPLabel, 10, "IP: " + userIPInfo, boxLayout);
-    addLabelToUserInfoDialog(&connectionLabel, 10, "Connection time: " + userConnectionTimeInfo, boxLayout);
-    addLabelToUserInfoDialog(&statusLabel, 10, "Status: " + userStatusInfo, boxLayout);
+    addLabelToDialog(&IPLabel, 10, "IP: " + userIPInfo, boxLayout);
+    addLabelToDialog(&connectionLabel, 10, "Connection time: " + userConnectionTimeInfo, boxLayout);
+    addLabelToDialog(&statusLabel, 10, "Status: " + userStatusInfo, boxLayout);
 
     QDialog *modalDialog = new QDialog(this);
     modalDialog->setMinimumWidth(200);
@@ -368,7 +554,7 @@ void Client::createUserInfoDialog(const QString& usernameInfo, const QString& us
     delete modalDialog;
 }
 
-void Client::addLabelToUserInfoDialog(QLabel** label, const int fontSize, const QString& labelText, QBoxLayout* boxLayout) {
+void Client::addLabelToDialog(QLabel** label, const int fontSize, const QString& labelText, QBoxLayout* boxLayout) {
     *label = new QLabel();
     QFont font = (*label)->font();
     font.setPointSize(fontSize);

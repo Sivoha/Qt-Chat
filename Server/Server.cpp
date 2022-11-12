@@ -11,9 +11,48 @@ Server::Server() {
     nextBlockSize = 0;
 }
 
+Server::~Server() {}
+
+void Server::setUpServer() {
+    QByteArray key;
+    QByteArray cert;
+
+    QFile file_key("D:/Documents/C++/Qt/Chat/Server/server.key");
+    if(file_key.open(QIODevice::ReadOnly)) {
+        key = file_key.readAll();
+        file_key.close();
+    }
+    else{
+        qDebug() << file_key.errorString();
+    }
+
+    QFile file_cert("D:/Documents/C++/Qt/Chat/Server/server.crt");
+    if(file_cert.open(QIODevice::ReadOnly)){
+        cert = file_cert.readAll();
+        file_cert.close();
+    }
+    else{
+        qDebug() << file_cert.errorString();
+    }
+
+    QSslKey ssl_key(key, QSsl::Rsa,QSsl::Pem,QSsl::PrivateKey,"localhost");
+    QSslCertificate ssl_cert(cert);
+
+    QList<QSslError> l;
+    l << QSslError(QSslError::SelfSignedCertificate,ssl_cert);
+    socket->ignoreSslErrors(l);
+
+    socket->setLocalCertificate(ssl_cert);
+    socket->setPrivateKey(ssl_key);
+//    connect(&socket, SIGNAL(encrypted()), this, SLOT(ready()));
+    socket->setSocketOption(QAbstractSocket::KeepAliveOption, true );
+}
+
 void Server::incomingConnection(qintptr socketDescriptor) {
     socket = new QSslSocket;
     socket->setSocketDescriptor(socketDescriptor);
+//    setUpServer();
+//    socket->startServerEncryption();
 
     connect(socket, &QSslSocket::readyRead, this, &Server::slotReadyRead);
 //    connect(socket, &QSslSocket::disconnected, socket, &QSslSocket::deleteLater);
@@ -22,12 +61,12 @@ void Server::incomingConnection(qintptr socketDescriptor) {
     userList[socket].userConnectionTime = QTime::currentTime();
     userList[socket].userStatus = Status::Online;
     userList[socket].userIP = socket->peerAddress().toString();
-
     userList[socket].username = "User" + QString::number(qrand() % 100000 + 1);
     qDebug() << userList[socket].userConnectionTime.toString() << userList[socket].userIP << userList[socket].username;
 
     emit updateWindowTitleEvent("Server | IP: " + IP + " Port: " + QString::number(port) + " Number of clients: " + QString::number(userList.size()));
     emit logEvent("<b>" + QTime::currentTime().toString() + "</b> " + userList[socket].username + " connected");
+
     sendToClient(true);
     sendUsernameToClient(userList[socket].username);
     sendUserListToClient();
@@ -76,6 +115,14 @@ void Server::slotReadyRead() {
             in >> newUserStatus;
             userList[socket].userStatus = stringToStatus[newUserStatus];
             nextBlockSize = 0;
+        } else if (sendType == "USERNAME&STATUS") {
+            QString strData;
+            in >> strData;
+            QStringList data = strData.split(" ");
+            userList[socket].username = data[0];
+            userList[socket].userStatus = stringToStatus[data[1]];
+            nextBlockSize = 0;
+            sendUserListToClient();
         } else if (sendType == "USERINFO") {
             QString username;
             in >> username;
@@ -90,11 +137,11 @@ void Server::sendToClient(const QString &str) {
     QString sendType = "MESSAGE";
     sendData.clear();
     QDataStream out(&sendData, QIODevice::WriteOnly);
-    out << quint16(0) << sendType << QTime::currentTime() << userList[socket].username << str;
+    out << quint16(0) << sendType << QTime::currentTime() << userList[socket].userIP << userList[socket].username << str;
     out.device()->seek(0);
     out << quint16(sendData.size() - sizeof(quint16));
-    for (auto itSocket : userList.keys()) {
-        itSocket->write(sendData);
+    for (const auto& userSocket : userList.keys()) {
+        userSocket->write(sendData);
     }
 }
 
@@ -111,8 +158,8 @@ void Server::sendUserListToClient() {
     out.device()->seek(0);
     out << quint16(sendData.size() - sizeof(quint16));
 
-    for (auto itSocket : userList.keys()) {
-        itSocket->write(sendData);
+    for (const auto& userSocket : userList.keys()) {
+        userSocket->write(sendData);
     }
 }
 
@@ -120,15 +167,15 @@ void Server::sendUserInfoToClient(const QString& username) {
     QString sendType = "USERINFO";
     sendData.clear();
     QDataStream out(&sendData, QIODevice::WriteOnly);
-    for (auto itSocket : userList.keys()) {
-        if (userList[itSocket].username == username) {
-            out << quint16(0) << sendType << username << userList[itSocket].userIP << userList[itSocket].userConnectionTime;
+    for (const auto& userSocket : userList.keys()) {
+        if (userList[userSocket].username == username) {
+            out << quint16(0) << sendType << username << userList[userSocket].userIP << userList[userSocket].userConnectionTime;
             QString userStatus;
-            if (userList[itSocket].userStatus == Status::Online) {
+            if (userList[userSocket].userStatus == Status::Online) {
                 userStatus = "Online";
-            } else if (userList[itSocket].userStatus == Status::Idle) {
+            } else if (userList[userSocket].userStatus == Status::Idle) {
                 userStatus = "Idle";
-            } else if (userList[itSocket].userStatus == Status::DoNotDisturb) {
+            } else if (userList[userSocket].userStatus == Status::DoNotDisturb) {
                 userStatus = "Do Not Disturb";
             }
             out << userStatus;
@@ -162,9 +209,9 @@ void Server::sendUsernameChangeLog(const QString& oldName, const QString& newNam
     out.device()->seek(0);
     out << quint16(sendData.size() - sizeof(quint16));
 
-    for (auto itSocket : userList.keys()) {
-        if (itSocket != socket) {
-            itSocket->write(sendData);
+    for (const auto& userSocket : userList.keys()) {
+        if (userSocket != socket) {
+            userSocket->write(sendData);
         }
     }
 }
@@ -178,9 +225,9 @@ void Server::sendToClient(bool action) {
     out.device()->seek(0);
     out << quint16(sendData.size() - sizeof(quint16));
 
-    for (auto itSocket : userList.keys()) {
-        if (itSocket != socket) {
-            itSocket->write(sendData);
+    for (const auto& userSocket : userList.keys()) {
+        if (userSocket != socket) {
+            userSocket->write(sendData);
         }
     }
 }

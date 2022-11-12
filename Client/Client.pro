@@ -1,4 +1,4 @@
-QT       += core gui network
+QT       += core gui network multimedia xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -10,19 +10,22 @@ CONFIG += c++17
 
 SOURCES += \
     UserListWidget.cpp \
-    helpdialog.cpp \
     main.cpp \
     Client.cpp
 
 HEADERS += \
     Client.h \
     UserListWidget.h \
-    helpdialog.h \
     includes.h
 
 FORMS += \
-    client.ui \
-    helpdialog.ui
+    client.ui
+DISTFILES += \
+    newmessagesound.wav \
+    rootCA.crt \
+    server.key \
+    server.crt \
+    settings.ini
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

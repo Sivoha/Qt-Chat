@@ -23,8 +23,11 @@ FORMS += \
     mainwindow.ui
 
 DISTFILES += \
-    serv_pri.key \
-    serv_ca.pem
+    rootCA.crt \
+    rootCA.key \
+    server.crt \
+    server.key
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

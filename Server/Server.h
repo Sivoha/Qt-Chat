@@ -9,11 +9,14 @@ class Server : public QTcpServer {
     friend class MainWindow;
 public:
     Server();
+    ~Server();
     QSslSocket *socket;
 private:
     QMap<QSslSocket*, User> userList;
 
     QByteArray sendData;
+
+    void setUpServer();
 
     void sendToClient(const QString&);
     void sendUserListToClient();
@@ -24,8 +27,8 @@ private:
 
     quint16 nextBlockSize;
 
-    QString IP = "127.0.0.5";
-    qint16 port = 27910;
+    QString IP = "127.0.0.1";
+    quint16 port = (quint16)45678;
 public slots:
     void incomingConnection(qintptr socketDescriptor);
     void disconnectEvent();
