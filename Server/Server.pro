@@ -26,7 +26,8 @@ DISTFILES += \
     rootCA.crt \
     rootCA.key \
     server.crt \
-    server.key
+    server.key \
+    userphoto.png
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

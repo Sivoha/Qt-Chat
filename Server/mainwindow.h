@@ -20,7 +20,9 @@ private:
     Ui::MainWindow *ui;
     Server* server;
 private slots:
+    void onNetworkSettingsButtonTriggered();
+    void onChangeKeyButtonTriggered();
     void logConnection(QString);
-    void updateWindowTitle(QString);
+    void updateWindowTitle();
 };
 #endif // MAINWINDOW_H

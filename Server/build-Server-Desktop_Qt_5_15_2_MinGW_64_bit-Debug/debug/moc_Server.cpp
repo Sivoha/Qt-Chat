@@ -63,16 +63,16 @@ static const uint qt_meta_data_Server[] = {
        2,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,   39,    2, 0x06 /* Public */,
-       3,    1,   42,    2, 0x06 /* Public */,
+       1,    0,   39,    2, 0x06 /* Public */,
+       3,    1,   40,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       4,    1,   45,    2, 0x0a /* Public */,
-       7,    0,   48,    2, 0x0a /* Public */,
-       8,    0,   49,    2, 0x0a /* Public */,
+       4,    1,   43,    2, 0x0a /* Public */,
+       7,    0,   46,    2, 0x0a /* Public */,
+       8,    0,   47,    2, 0x0a /* Public */,
 
  // signals: parameters
-    QMetaType::Void, QMetaType::QString,    2,
+    QMetaType::Void,
     QMetaType::Void, QMetaType::QString,    2,
 
  // slots: parameters
@@ -89,7 +89,7 @@ void Server::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
         auto *_t = static_cast<Server *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->updateWindowTitleEvent((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 0: _t->updateWindowTitleEvent(); break;
         case 1: _t->logEvent((*reinterpret_cast< QString(*)>(_a[1]))); break;
         case 2: _t->incomingConnection((*reinterpret_cast< qintptr(*)>(_a[1]))); break;
         case 3: _t->disconnectEvent(); break;
@@ -99,7 +99,7 @@ void Server::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
     } else if (_c == QMetaObject::IndexOfMethod) {
         int *result = reinterpret_cast<int *>(_a[0]);
         {
-            using _t = void (Server::*)(QString );
+            using _t = void (Server::*)();
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&Server::updateWindowTitleEvent)) {
                 *result = 0;
                 return;
@@ -156,10 +156,9 @@ int Server::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void Server::updateWindowTitleEvent(QString _t1)
+void Server::updateWindowTitleEvent()
 {
-    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
-    QMetaObject::activate(this, &staticMetaObject, 0, _a);
+    QMetaObject::activate(this, &staticMetaObject, 0, nullptr);
 }
 
 // SIGNAL 1

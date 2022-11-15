@@ -37,7 +37,7 @@
         "-I",
         "D:\\Qt\\Tools\\QtCreator\\share\\qtcreator\\cplusplus\\wrappedQtHeaders\\QtCore",
         "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client",
+        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\include",
         "-I",
@@ -56,8 +56,6 @@
         "D:\\Qt\\5.15.2\\mingw81_64\\include\\QtCore",
         "-I",
         "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client\\debug",
-        "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\mkspecs\\win32-g++",
         "-isystem",
@@ -77,10 +75,10 @@
         "-ferror-limit=1000",
         "-x",
         "c++",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client\\UserListWidget.cpp"
+        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client\\UserListWidget.cpp"
     ],
     "directory": "D:/Documents/C++/Qt/Chat/Client/Client/.qtc_clangd",
-    "file": "D:/Documents/C++/Qt/Chat/Client/UserListWidget.cpp"
+    "file": "D:/Documents/C++/Qt/Chat/Client/Client/UserListWidget.cpp"
 },
 {
     "arguments": [
@@ -120,7 +118,7 @@
         "-I",
         "D:\\Qt\\Tools\\QtCreator\\share\\qtcreator\\cplusplus\\wrappedQtHeaders\\QtCore",
         "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client",
+        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\include",
         "-I",
@@ -139,8 +137,6 @@
         "D:\\Qt\\5.15.2\\mingw81_64\\include\\QtCore",
         "-I",
         "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client\\debug",
-        "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\mkspecs\\win32-g++",
         "-isystem",
@@ -160,10 +156,10 @@
         "-ferror-limit=1000",
         "-x",
         "c++",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client\\main.cpp"
+        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client\\main.cpp"
     ],
     "directory": "D:/Documents/C++/Qt/Chat/Client/Client/.qtc_clangd",
-    "file": "D:/Documents/C++/Qt/Chat/Client/main.cpp"
+    "file": "D:/Documents/C++/Qt/Chat/Client/Client/main.cpp"
 },
 {
     "arguments": [
@@ -203,7 +199,7 @@
         "-I",
         "D:\\Qt\\Tools\\QtCreator\\share\\qtcreator\\cplusplus\\wrappedQtHeaders\\QtCore",
         "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client",
+        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\include",
         "-I",
@@ -222,8 +218,6 @@
         "D:\\Qt\\5.15.2\\mingw81_64\\include\\QtCore",
         "-I",
         "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client\\debug",
-        "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\mkspecs\\win32-g++",
         "-isystem",
@@ -243,10 +237,10 @@
         "-ferror-limit=1000",
         "-x",
         "c++",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client.cpp"
+        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client\\Client.cpp"
     ],
     "directory": "D:/Documents/C++/Qt/Chat/Client/Client/.qtc_clangd",
-    "file": "D:/Documents/C++/Qt/Chat/Client/Client.cpp"
+    "file": "D:/Documents/C++/Qt/Chat/Client/Client/Client.cpp"
 },
 {
     "arguments": [
@@ -286,7 +280,7 @@
         "-I",
         "D:\\Qt\\Tools\\QtCreator\\share\\qtcreator\\cplusplus\\wrappedQtHeaders\\QtCore",
         "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client",
+        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\include",
         "-I",
@@ -305,8 +299,6 @@
         "D:\\Qt\\5.15.2\\mingw81_64\\include\\QtCore",
         "-I",
         "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client\\debug",
-        "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\mkspecs\\win32-g++",
         "-isystem",
@@ -326,10 +318,10 @@
         "-ferror-limit=1000",
         "-x",
         "c++-header",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client.h"
+        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client\\Client.h"
     ],
     "directory": "D:/Documents/C++/Qt/Chat/Client/Client/.qtc_clangd",
-    "file": "D:/Documents/C++/Qt/Chat/Client/Client.h"
+    "file": "D:/Documents/C++/Qt/Chat/Client/Client/Client.h"
 },
 {
     "arguments": [
@@ -369,7 +361,7 @@
         "-I",
         "D:\\Qt\\Tools\\QtCreator\\share\\qtcreator\\cplusplus\\wrappedQtHeaders\\QtCore",
         "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client",
+        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\include",
         "-I",
@@ -388,8 +380,6 @@
         "D:\\Qt\\5.15.2\\mingw81_64\\include\\QtCore",
         "-I",
         "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client\\debug",
-        "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\mkspecs\\win32-g++",
         "-isystem",
@@ -409,10 +399,10 @@
         "-ferror-limit=1000",
         "-x",
         "c++-header",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client\\UserListWidget.h"
+        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client\\UserListWidget.h"
     ],
     "directory": "D:/Documents/C++/Qt/Chat/Client/Client/.qtc_clangd",
-    "file": "D:/Documents/C++/Qt/Chat/Client/UserListWidget.h"
+    "file": "D:/Documents/C++/Qt/Chat/Client/Client/UserListWidget.h"
 },
 {
     "arguments": [
@@ -452,7 +442,7 @@
         "-I",
         "D:\\Qt\\Tools\\QtCreator\\share\\qtcreator\\cplusplus\\wrappedQtHeaders\\QtCore",
         "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client",
+        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\include",
         "-I",
@@ -471,8 +461,6 @@
         "D:\\Qt\\5.15.2\\mingw81_64\\include\\QtCore",
         "-I",
         "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client\\debug",
-        "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\mkspecs\\win32-g++",
         "-isystem",
@@ -492,10 +480,10 @@
         "-ferror-limit=1000",
         "-x",
         "c++-header",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client\\includes.h"
+        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client\\includes.h"
     ],
     "directory": "D:/Documents/C++/Qt/Chat/Client/Client/.qtc_clangd",
-    "file": "D:/Documents/C++/Qt/Chat/Client/includes.h"
+    "file": "D:/Documents/C++/Qt/Chat/Client/Client/includes.h"
 },
 {
     "arguments": [
@@ -535,7 +523,7 @@
         "-I",
         "D:\\Qt\\Tools\\QtCreator\\share\\qtcreator\\cplusplus\\wrappedQtHeaders\\QtCore",
         "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client",
+        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\include",
         "-I",
@@ -554,8 +542,6 @@
         "D:\\Qt\\5.15.2\\mingw81_64\\include\\QtCore",
         "-I",
         "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client\\debug",
-        "-I",
-        "D:\\Documents\\C++\\Qt\\Chat\\Client\\Client",
         "-I",
         "D:\\Qt\\5.15.2\\mingw81_64\\mkspecs\\win32-g++",
         "-isystem",

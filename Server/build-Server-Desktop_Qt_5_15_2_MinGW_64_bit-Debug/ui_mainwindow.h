@@ -10,9 +10,11 @@
 #define UI_MAINWINDOW_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTextBrowser>
@@ -23,10 +25,13 @@ QT_BEGIN_NAMESPACE
 class Ui_MainWindow
 {
 public:
+    QAction *networkSettingsButton;
+    QAction *changeKeyButton;
     QWidget *centralwidget;
     QGridLayout *gridLayout;
     QTextBrowser *clientLogBrowser;
     QMenuBar *menubar;
+    QMenu *menuSettings;
     QStatusBar *statusbar;
 
     void setupUi(QMainWindow *MainWindow)
@@ -34,6 +39,10 @@ public:
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
         MainWindow->resize(512, 393);
+        networkSettingsButton = new QAction(MainWindow);
+        networkSettingsButton->setObjectName(QString::fromUtf8("networkSettingsButton"));
+        changeKeyButton = new QAction(MainWindow);
+        changeKeyButton->setObjectName(QString::fromUtf8("changeKeyButton"));
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         gridLayout = new QGridLayout(centralwidget);
@@ -47,10 +56,16 @@ public:
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
         menubar->setGeometry(QRect(0, 0, 512, 21));
+        menuSettings = new QMenu(menubar);
+        menuSettings->setObjectName(QString::fromUtf8("menuSettings"));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName(QString::fromUtf8("statusbar"));
         MainWindow->setStatusBar(statusbar);
+
+        menubar->addAction(menuSettings->menuAction());
+        menuSettings->addAction(networkSettingsButton);
+        menuSettings->addAction(changeKeyButton);
 
         retranslateUi(MainWindow);
 
@@ -60,6 +75,9 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
+        networkSettingsButton->setText(QCoreApplication::translate("MainWindow", "Network", nullptr));
+        changeKeyButton->setText(QCoreApplication::translate("MainWindow", "Change key", nullptr));
+        menuSettings->setTitle(QCoreApplication::translate("MainWindow", "Settings", nullptr));
     } // retranslateUi
 
 };

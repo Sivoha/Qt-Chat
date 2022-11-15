@@ -14,5 +14,13 @@
 #include <QSslCertificate>
 #include <QSslConfiguration>
 #include <QMap>
+#include <QRegExp>
+#include <QBoxLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QPushButton>
+#include <QDialog>
+#include <QPixmap>
 
 #endif // INCLUDES_H

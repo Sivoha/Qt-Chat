@@ -29,8 +29,26 @@
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="networkSettingsButton"/>
+    <addaction name="changeKeyButton"/>
+   </widget>
+   <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="networkSettingsButton">
+   <property name="text">
+    <string>Network</string>
+   </property>
+  </action>
+  <action name="changeKeyButton">
+   <property name="text">
+    <string>Change key</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

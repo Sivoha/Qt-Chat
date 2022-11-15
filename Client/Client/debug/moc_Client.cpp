@@ -7,7 +7,7 @@
 *****************************************************************************/
 
 #include <memory>
-#include "../../Client.h"
+#include "../Client.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmetatype.h>
 #if !defined(Q_MOC_OUTPUT_REVISION)
@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_Client_t {
-    QByteArrayData data[20];
-    char stringdata0[450];
+    QByteArrayData data[23];
+    char stringdata0[545];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -42,16 +42,19 @@ QT_MOC_LITERAL(6, 126, 28), // "onSaveHistoryButtonTriggered"
 QT_MOC_LITERAL(7, 155, 21), // "onExitButtonTriggered"
 QT_MOC_LITERAL(8, 177, 21), // "onHelpButtonTriggered"
 QT_MOC_LITERAL(9, 199, 33), // "onUsernameSettingsButtonTrigg..."
-QT_MOC_LITERAL(10, 233, 31), // "onServerSettingsButtonTriggered"
-QT_MOC_LITERAL(11, 265, 29), // "onStatusOnlineButtonTriggered"
-QT_MOC_LITERAL(12, 295, 27), // "onStatusIdleButtonTriggered"
-QT_MOC_LITERAL(13, 323, 35), // "onStatusDoNotDisturbButtonTri..."
-QT_MOC_LITERAL(14, 359, 17), // "onUserItemClicked"
-QT_MOC_LITERAL(15, 377, 13), // "slotConnected"
-QT_MOC_LITERAL(16, 391, 13), // "slotReadyRead"
-QT_MOC_LITERAL(17, 405, 9), // "slotError"
-QT_MOC_LITERAL(18, 415, 28), // "QAbstractSocket::SocketError"
-QT_MOC_LITERAL(19, 444, 5) // "error"
+QT_MOC_LITERAL(10, 233, 34), // "onUserPhotoSettingsButtonTrig..."
+QT_MOC_LITERAL(11, 268, 30), // "onChooseUserPhotoButtonClicked"
+QT_MOC_LITERAL(12, 299, 31), // "onServerSettingsButtonTriggered"
+QT_MOC_LITERAL(13, 331, 29), // "onStatusOnlineButtonTriggered"
+QT_MOC_LITERAL(14, 361, 27), // "onStatusIdleButtonTriggered"
+QT_MOC_LITERAL(15, 389, 35), // "onStatusDoNotDisturbButtonTri..."
+QT_MOC_LITERAL(16, 425, 28), // "onStatusOtherButtonTriggered"
+QT_MOC_LITERAL(17, 454, 17), // "onUserItemClicked"
+QT_MOC_LITERAL(18, 472, 13), // "slotConnected"
+QT_MOC_LITERAL(19, 486, 13), // "slotReadyRead"
+QT_MOC_LITERAL(20, 500, 9), // "slotError"
+QT_MOC_LITERAL(21, 510, 28), // "QAbstractSocket::SocketError"
+QT_MOC_LITERAL(22, 539, 5) // "error"
 
     },
     "Client\0onSendMessageButtonClicked\0\0"
@@ -61,10 +64,13 @@ QT_MOC_LITERAL(19, 444, 5) // "error"
     "onSaveHistoryButtonTriggered\0"
     "onExitButtonTriggered\0onHelpButtonTriggered\0"
     "onUsernameSettingsButtonTriggered\0"
+    "onUserPhotoSettingsButtonTriggered\0"
+    "onChooseUserPhotoButtonClicked\0"
     "onServerSettingsButtonTriggered\0"
     "onStatusOnlineButtonTriggered\0"
     "onStatusIdleButtonTriggered\0"
     "onStatusDoNotDisturbButtonTriggered\0"
+    "onStatusOtherButtonTriggered\0"
     "onUserItemClicked\0slotConnected\0"
     "slotReadyRead\0slotError\0"
     "QAbstractSocket::SocketError\0error"
@@ -77,7 +83,7 @@ static const uint qt_meta_data_Client[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      16,   14, // methods
+      19,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -85,24 +91,30 @@ static const uint qt_meta_data_Client[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,   94,    2, 0x08 /* Private */,
-       3,    0,   95,    2, 0x08 /* Private */,
-       4,    0,   96,    2, 0x08 /* Private */,
-       5,    0,   97,    2, 0x08 /* Private */,
-       6,    0,   98,    2, 0x08 /* Private */,
-       7,    0,   99,    2, 0x08 /* Private */,
-       8,    0,  100,    2, 0x08 /* Private */,
-       9,    0,  101,    2, 0x08 /* Private */,
-      10,    0,  102,    2, 0x08 /* Private */,
-      11,    0,  103,    2, 0x08 /* Private */,
-      12,    0,  104,    2, 0x08 /* Private */,
-      13,    0,  105,    2, 0x08 /* Private */,
-      14,    1,  106,    2, 0x08 /* Private */,
-      15,    0,  109,    2, 0x08 /* Private */,
-      16,    0,  110,    2, 0x08 /* Private */,
-      17,    1,  111,    2, 0x08 /* Private */,
+       1,    0,  109,    2, 0x08 /* Private */,
+       3,    0,  110,    2, 0x08 /* Private */,
+       4,    0,  111,    2, 0x08 /* Private */,
+       5,    0,  112,    2, 0x08 /* Private */,
+       6,    0,  113,    2, 0x08 /* Private */,
+       7,    0,  114,    2, 0x08 /* Private */,
+       8,    0,  115,    2, 0x08 /* Private */,
+       9,    0,  116,    2, 0x08 /* Private */,
+      10,    0,  117,    2, 0x08 /* Private */,
+      11,    0,  118,    2, 0x08 /* Private */,
+      12,    0,  119,    2, 0x08 /* Private */,
+      13,    0,  120,    2, 0x08 /* Private */,
+      14,    0,  121,    2, 0x08 /* Private */,
+      15,    0,  122,    2, 0x08 /* Private */,
+      16,    0,  123,    2, 0x08 /* Private */,
+      17,    1,  124,    2, 0x08 /* Private */,
+      18,    0,  127,    2, 0x08 /* Private */,
+      19,    0,  128,    2, 0x08 /* Private */,
+      20,    1,  129,    2, 0x08 /* Private */,
 
  // slots: parameters
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
@@ -118,7 +130,7 @@ static const uint qt_meta_data_Client[] = {
     QMetaType::Void, QMetaType::QPoint,    2,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 18,   19,
+    QMetaType::Void, 0x80000000 | 21,   22,
 
        0        // eod
 };
@@ -137,20 +149,23 @@ void Client::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
         case 5: _t->onExitButtonTriggered(); break;
         case 6: _t->onHelpButtonTriggered(); break;
         case 7: _t->onUsernameSettingsButtonTriggered(); break;
-        case 8: _t->onServerSettingsButtonTriggered(); break;
-        case 9: _t->onStatusOnlineButtonTriggered(); break;
-        case 10: _t->onStatusIdleButtonTriggered(); break;
-        case 11: _t->onStatusDoNotDisturbButtonTriggered(); break;
-        case 12: _t->onUserItemClicked((*reinterpret_cast< QPoint(*)>(_a[1]))); break;
-        case 13: _t->slotConnected(); break;
-        case 14: _t->slotReadyRead(); break;
-        case 15: _t->slotError((*reinterpret_cast< QAbstractSocket::SocketError(*)>(_a[1]))); break;
+        case 8: _t->onUserPhotoSettingsButtonTriggered(); break;
+        case 9: _t->onChooseUserPhotoButtonClicked(); break;
+        case 10: _t->onServerSettingsButtonTriggered(); break;
+        case 11: _t->onStatusOnlineButtonTriggered(); break;
+        case 12: _t->onStatusIdleButtonTriggered(); break;
+        case 13: _t->onStatusDoNotDisturbButtonTriggered(); break;
+        case 14: _t->onStatusOtherButtonTriggered(); break;
+        case 15: _t->onUserItemClicked((*reinterpret_cast< QPoint(*)>(_a[1]))); break;
+        case 16: _t->slotConnected(); break;
+        case 17: _t->slotReadyRead(); break;
+        case 18: _t->slotError((*reinterpret_cast< QAbstractSocket::SocketError(*)>(_a[1]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
         switch (_id) {
         default: *reinterpret_cast<int*>(_a[0]) = -1; break;
-        case 15:
+        case 18:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 0:
@@ -190,13 +205,13 @@ int Client::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 16)
+        if (_id < 19)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 16;
+        _id -= 19;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 16)
+        if (_id < 19)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 16;
+        _id -= 19;
     }
     return _id;
 }

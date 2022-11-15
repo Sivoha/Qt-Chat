@@ -29,13 +29,16 @@ private:
 
     QString IP = "127.0.0.1";
     quint16 port = (quint16)45678;
+    quint16 numberOfClients = 0;
+
+    void test();
 public slots:
     void incomingConnection(qintptr socketDescriptor);
     void disconnectEvent();
     void slotReadyRead();
 
 signals:
-    void updateWindowTitleEvent(QString);
+    void updateWindowTitleEvent();
     void logEvent(QString);
 };
 

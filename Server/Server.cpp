@@ -59,12 +59,14 @@ void Server::incomingConnection(qintptr socketDescriptor) {
     connect(socket, SIGNAL(disconnected()), this, SLOT(disconnectEvent()));
 
     userList[socket].userConnectionTime = QTime::currentTime();
-    userList[socket].userStatus = Status::Online;
+    userList[socket].userStatus = "Online";
     userList[socket].userIP = socket->peerAddress().toString();
     userList[socket].username = "User" + QString::number(qrand() % 100000 + 1);
+    userList[socket].userPhoto = QPixmap("userphoto.png");
     qDebug() << userList[socket].userConnectionTime.toString() << userList[socket].userIP << userList[socket].username;
+    numberOfClients++;
 
-    emit updateWindowTitleEvent("Server | IP: " + IP + " Port: " + QString::number(port) + " Number of clients: " + QString::number(userList.size()));
+    emit updateWindowTitleEvent();
     emit logEvent("<b>" + QTime::currentTime().toString() + "</b> " + userList[socket].username + " connected");
 
     sendToClient(true);
@@ -77,16 +79,19 @@ void Server::disconnectEvent() {
     sendToClient(false);
     emit logEvent("<b>" + QTime::currentTime().toString() + "</b> " + userList[socket].username + " disconnected");
     userList.remove(socket);
-    emit updateWindowTitleEvent("Server | IP: " + IP + " Port: " + QString::number(port) + " Number of clients: " + QString::number(userList.size()));
+    numberOfClients--;
+    emit updateWindowTitleEvent();
     sendUserListToClient();
 }
 
 void Server::slotReadyRead() {
     socket = (QSslSocket*)sender();
+//    QByteArray test2 = socket->readAll();
+//    qDebug() << "HERE " << test2.size();
     QDataStream in(socket);
     while (true) {
         if (nextBlockSize == 0) {
-            if (socket->bytesAvailable() < 2) {
+            if ((quint16)socket->bytesAvailable() < sizeof(quint16)) {
                 break;
             }
             in >> nextBlockSize;
@@ -113,14 +118,14 @@ void Server::slotReadyRead() {
         } else if (sendType == "STATUS") {
             QString newUserStatus;
             in >> newUserStatus;
-            userList[socket].userStatus = stringToStatus[newUserStatus];
+            userList[socket].userStatus = newUserStatus;
             nextBlockSize = 0;
         } else if (sendType == "USERNAME&STATUS") {
             QString strData;
             in >> strData;
             QStringList data = strData.split(" ");
             userList[socket].username = data[0];
-            userList[socket].userStatus = stringToStatus[data[1]];
+            userList[socket].userStatus = data[1];
             nextBlockSize = 0;
             sendUserListToClient();
         } else if (sendType == "USERINFO") {
@@ -128,9 +133,39 @@ void Server::slotReadyRead() {
             in >> username;
             nextBlockSize = 0;
             sendUserInfoToClient(username);
+        } else if (sendType == "USERPHOTO") {
+            QPixmap newUserPhoto = QPixmap();
+            in >> newUserPhoto;
+            qDebug() << newUserPhoto.size();
+            userList[socket].userPhoto = newUserPhoto;
+            nextBlockSize = 0;
+            sendUserListToClient();
         }
         break;
     }
+}
+
+void Server::test() {
+    QBoxLayout* boxLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+
+    QLabel *userPhotoLabel = new QLabel();
+    userPhotoLabel->setPixmap(userList[socket].userPhoto);
+    userPhotoLabel->setFixedSize(250, 250);
+    userPhotoLabel->setScaledContents(true);
+    boxLayout->addWidget(userPhotoLabel);
+
+    QPushButton *saveUserPhotoButton = new QPushButton("Save");
+    boxLayout->addWidget(saveUserPhotoButton);
+
+    QDialog *modalDialog = new QDialog();
+    modalDialog->setModal(false);
+    modalDialog->setWindowTitle("Photo settings");
+    modalDialog->setLayout(boxLayout);
+    connect(saveUserPhotoButton, SIGNAL(clicked()), modalDialog, SLOT(accept()));
+    if (modalDialog->exec() == QDialog::Accepted) {
+        delete modalDialog;
+    }
+
 }
 
 void Server::sendToClient(const QString &str) {
@@ -150,11 +185,16 @@ void Server::sendUserListToClient() {
     sendData.clear();
     QDataStream out(&sendData, QIODevice::WriteOnly);
 
-    QString usernames = "";
+//    QString usernames = "";
+//    foreach(User user, userList) {
+//        usernames += user.username + " ";
+//    }
+//    out << quint16(0) << sendType << usernames;
+    out << quint16(0) << sendType << userList.size();
     foreach(User user, userList) {
-        usernames += user.username + " ";
+        out << user.username << user.userPhoto;
     }
-    out << quint16(0) << sendType << usernames;
+
     out.device()->seek(0);
     out << quint16(sendData.size() - sizeof(quint16));
 
@@ -169,16 +209,7 @@ void Server::sendUserInfoToClient(const QString& username) {
     QDataStream out(&sendData, QIODevice::WriteOnly);
     for (const auto& userSocket : userList.keys()) {
         if (userList[userSocket].username == username) {
-            out << quint16(0) << sendType << username << userList[userSocket].userIP << userList[userSocket].userConnectionTime;
-            QString userStatus;
-            if (userList[userSocket].userStatus == Status::Online) {
-                userStatus = "Online";
-            } else if (userList[userSocket].userStatus == Status::Idle) {
-                userStatus = "Idle";
-            } else if (userList[userSocket].userStatus == Status::DoNotDisturb) {
-                userStatus = "Do Not Disturb";
-            }
-            out << userStatus;
+            out << quint16(0) << sendType << username << userList[userSocket].userIP << userList[userSocket].userConnectionTime << userList[userSocket].userStatus << userList[userSocket].userPhoto;
             break;
         }
     }

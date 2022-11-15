@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Client</class>
+ <widget class="QMainWindow" name="Client">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>754</width>
+    <height>359</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QTextBrowser" name="messageBrowser">
+      <property name="minimumSize">
+       <size>
+        <width>650</width>
+        <height>0</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="UserListWidget" name="userListWidget">
+      <property name="maximumSize">
+       <size>
+        <width>300</width>
+        <height>16777215</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLineEdit" name="newMessageLine">
+      <property name="minimumSize">
+       <size>
+        <width>650</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QPushButton" name="sendMessageButton">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>300</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Send</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>754</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="connectToServerButton"/>
+    <addaction name="disconnectButton"/>
+    <addaction name="saveHistoryButton"/>
+    <addaction name="exitButton"/>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <widget class="QMenu" name="menuStatus">
+     <property name="title">
+      <string>Status</string>
+     </property>
+    </widget>
+    <addaction name="serverSettingsButton"/>
+    <addaction name="usernameSettingsButton"/>
+    <addaction name="actionUser_photo"/>
+    <addaction name="menuStatus"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuSettings"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="connectToServerButton">
+   <property name="text">
+    <string>Connect to server</string>
+   </property>
+  </action>
+  <action name="disconnectButton">
+   <property name="text">
+    <string>Disconnect</string>
+   </property>
+  </action>
+  <action name="saveHistoryButton">
+   <property name="text">
+    <string>Save history to XML file</string>
+   </property>
+  </action>
+  <action name="exitButton">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="serverSettingsButton">
+   <property name="text">
+    <string>Server: </string>
+   </property>
+  </action>
+  <action name="usernameSettingsButton">
+   <property name="text">
+    <string>Username</string>
+   </property>
+  </action>
+  <action name="actionbebra">
+   <property name="text">
+    <string>bebra</string>
+   </property>
+  </action>
+  <action name="userPhotoSettingsButton">
+   <property name="text">
+    <string>User photo</string>
+   </property>
+  </action>
+  <action name="actionUser_photo">
+   <property name="text">
+    <string>User photo</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>UserListWidget</class>
+   <extends>QListWidget</extends>
+   <header>userlistwidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
