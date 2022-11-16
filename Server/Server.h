@@ -13,6 +13,7 @@ public:
     QSslSocket *socket;
 private:
     QMap<QSslSocket*, User> userList;
+    QSet<QString> activeUsernames;
 
     QByteArray sendData;
 
@@ -24,6 +25,7 @@ private:
     void sendUsernameChangeLog(const QString&, const QString&);
     void sendUsernameToClient(const QString&);
     void sendToClient(bool);
+    void sendUsernameStatusToClient(const QString&);
 
     quint16 nextBlockSize;
 

@@ -40,6 +40,7 @@ private slots:
     void onUsernameSettingsButtonTriggered();
     void onUserPhotoSettingsButtonTriggered();
     void onChooseUserPhotoButtonClicked();
+    void onDefaultUserPhotoButtonClicked();
     void onServerSettingsButtonTriggered();
     void onStatusOnlineButtonTriggered();
     void onStatusIdleButtonTriggered();
@@ -86,17 +87,19 @@ private:
     QString boldCurrentTime();
 
     QSslSocket *userSocket;
+
+//    QSet<QString> activeUsernames;
     QString username = "";
+    bool isNewUsernameActive;
 
     QPixmap userPhoto;
     QString newUserPhotoPath;
-    QString userPhotoPath = "userphoto.png";
+    QString userPhotoPath;
+    QString defaultUserPhotoPath = "userphoto.png";
 
     QString userStatus;
     QString customUserStatus;
     QString userStatusBeforeDisconnect;
-
-    QSet<QString> activeUsernames;
 
     QByteArray messageData;
     quint16 nextBlockSize;

@@ -22,5 +22,6 @@
 #include <QPushButton>
 #include <QDialog>
 #include <QPixmap>
+#include <QSet>
 
 #endif // INCLUDES_H

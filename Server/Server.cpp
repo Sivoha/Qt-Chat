@@ -65,6 +65,7 @@ void Server::incomingConnection(qintptr socketDescriptor) {
     userList[socket].userPhoto = QPixmap("userphoto.png");
     qDebug() << userList[socket].userConnectionTime.toString() << userList[socket].userIP << userList[socket].username;
     numberOfClients++;
+    activeUsernames.insert(userList[socket].username);
 
     emit updateWindowTitleEvent();
     emit logEvent("<b>" + QTime::currentTime().toString() + "</b> " + userList[socket].username + " connected");
@@ -112,6 +113,8 @@ void Server::slotReadyRead() {
             QString newUsername;
             in >> newUsername;
             sendUsernameChangeLog(userList[socket].username, newUsername);
+            activeUsernames.remove(userList[socket].username);
+            activeUsernames.insert(newUsername);
             userList[socket].username = newUsername;
             nextBlockSize = 0;
             sendUserListToClient();
@@ -120,14 +123,6 @@ void Server::slotReadyRead() {
             in >> newUserStatus;
             userList[socket].userStatus = newUserStatus;
             nextBlockSize = 0;
-        } else if (sendType == "USERNAME&STATUS") {
-            QString strData;
-            in >> strData;
-            QStringList data = strData.split(" ");
-            userList[socket].username = data[0];
-            userList[socket].userStatus = data[1];
-            nextBlockSize = 0;
-            sendUserListToClient();
         } else if (sendType == "USERINFO") {
             QString username;
             in >> username;
@@ -140,6 +135,11 @@ void Server::slotReadyRead() {
             userList[socket].userPhoto = newUserPhoto;
             nextBlockSize = 0;
             sendUserListToClient();
+        } else if (sendType == "ISNEWUSERNAMEACTIVE") {
+            QString newUsername;
+            in >> newUsername;
+            sendUsernameStatusToClient(newUsername);
+            nextBlockSize = 0;
         }
         break;
     }
@@ -261,5 +261,17 @@ void Server::sendToClient(bool action) {
             userSocket->write(sendData);
         }
     }
+}
+
+void Server::sendUsernameStatusToClient(const QString& newUsername) {
+    QString sendType = "ISNEWUSERNAMEACTIVE";
+
+    sendData.clear();
+    QDataStream out(&sendData, QIODevice::WriteOnly);
+    out << quint16(0) << sendType << activeUsernames.contains(newUsername);
+    out.device()->seek(0);
+    out << quint16(sendData.size() - sizeof(quint16));
+
+    socket->write(sendData);
 }
 

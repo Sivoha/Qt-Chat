@@ -35,7 +35,7 @@ Client::Client(QWidget *parent) :
     }
 
     if (!settings->contains("USER/USERPHOTOPATH")) {
-        settings->setValue("USER/USERPHOTOPATH", "userphoto.png");
+        settings->setValue("USER/USERPHOTOPATH", defaultUserPhotoPath);
     }
 
     serverIP = settings->value("SERVER/IP", "").toString();
@@ -152,11 +152,17 @@ void Client::slotConnected() {
 
     userStatus = userStatusBeforeDisconnect;
     settings->setValue("USER/STATUS", userStatus);
+
     if (!username.isEmpty()) {
-        sendToServer("USERNAME&STATUS", username + " " + userStatus);
-    } else {
-       sendToServer("STATUS", userStatus);
+        sendToServer("USERNAME", username);
+        userSocket->waitForBytesWritten(200000);
     }
+
+    if (userPhotoPath != defaultUserPhotoPath) {
+        sendToServer("USERPHOTO", "");
+        userSocket->waitForBytesWritten(200000);
+    }
+    sendToServer("STATUS", userStatus);
 
     updateWindowStatus();
     ui->serverSettingsButton->setText("Server: " + serverIP + " " + QString::number(serverPort));
@@ -193,7 +199,7 @@ void Client::sendToServer(const QString& sendType, const QString& message) {
         out << quint16(messageData.size() - sizeof(quint16));
         userSocket->write(messageData);
         ui->newMessageLine->clear();
-    } else if (sendType == "USERNAME" || sendType == "STATUS" || sendType == "USERINFO" || sendType == "USERNAME&STATUS") {
+    } else if (sendType == "USERNAME" || sendType == "STATUS" || sendType == "USERINFO" || sendType == "ISNEWUSERNAMEACTIVE") {
         out << quint16(0) << sendType << message;
         out.device()->seek(0);
         out << quint16(messageData.size() - sizeof(quint16));
@@ -247,10 +253,10 @@ void Client::slotReadyRead() {
             QPixmap tempUserPhoto = QPixmap();
             for (int i = 0; i < userListSize; ++i) {
                 in >> tempUserName >> tempUserPhoto;
-                activeUsernames.insert(tempUserName);
-                QIcon userIcon;
-                userIcon.addPixmap(tempUserPhoto);
-                QListWidgetItem* userItem = new QListWidgetItem(userIcon, tempUserName);
+//                activeUsernames.insert(tempUserName);
+//                QIcon userIcon;
+//                userIcon.addPixmap(tempUserPhoto);
+                QListWidgetItem* userItem = new QListWidgetItem(tempUserPhoto, tempUserName);
                 ui->userListWidget->addItem(userItem);
             }
 //            QString usernames;
@@ -272,7 +278,7 @@ void Client::slotReadyRead() {
             QTime actionTime;
 
             in >> actionTime >> senderName >> action;
-            activeUsernames.insert(senderName);
+//            activeUsernames.insert(senderName);
 
             ui->messageBrowser->append("<b>" + actionTime.toString() + "</b> " + "<b>" + senderName + "</b> " + action);
             nextBlockSize = 0;
@@ -282,7 +288,7 @@ void Client::slotReadyRead() {
             if (username.isEmpty()) {
                 username = newUsername;
                 settings->setValue("USER/USERNAME", username);
-                activeUsernames.insert(username);
+//                activeUsernames.insert(username);
             }
             nextBlockSize = 0;
         } else if (inType == "USERNAMECHANGE") {
@@ -291,10 +297,10 @@ void Client::slotReadyRead() {
             QString newName;
 
             in >> changeTime >> oldName >> newName;
-            if (activeUsernames.contains(oldName)) {
-                activeUsernames.remove(oldName);
-                activeUsernames.insert(newName);
-            }
+//            if (activeUsernames.contains(oldName)) {
+//                activeUsernames.remove(oldName);
+//                activeUsernames.insert(newName);
+//            }
 
             ui->messageBrowser->append("<b>" + changeTime.toString() + "</b> " + "<b>" + oldName + "</b> " + "changed name to " + "<b>" + newName + "</b>");
             nextBlockSize = 0;
@@ -308,6 +314,9 @@ void Client::slotReadyRead() {
             in >> usernameInfo >> userIPInfo >> userConnectionTimeInfo >> userStatusInfo >> userPhotoInfo;
             createUserInfoDialog(usernameInfo, userIPInfo, userConnectionTimeInfo.toString(), userStatusInfo, userPhotoInfo);
 
+            nextBlockSize = 0;
+        } else if (inType == "ISNEWUSERNAMEACTIVE") {
+            in >> isNewUsernameActive;
             nextBlockSize = 0;
         }
     }
@@ -452,15 +461,25 @@ void Client::onUsernameSettingsButtonTriggered() {
 
     modalDialog->setLayout(boxLayout);
     if (modalDialog->exec() == QDialog::Accepted) {
-        if (!activeUsernames.contains(usernameLine->text()) && !usernameLine->text().isEmpty()) {
-            activeUsernames.remove(username);
-            activeUsernames.insert(usernameLine->text());
+        sendToServer("ISNEWUSERNAMEACTIVE", usernameLine->text());
+        userSocket->waitForReadyRead(100000);
+        if (!isNewUsernameActive && !usernameLine->text().isEmpty()) {
             username = usernameLine->text();
             sendToServer("USERNAME", username);
             settings->setValue("USER/USERNAME", username);
-        } else if ((username != usernameLine->text() && activeUsernames.contains(usernameLine->text())) || usernameLine->text().isEmpty()) {
+        } else if ((username != usernameLine->text() && isNewUsernameActive) || usernameLine->text().isEmpty()) {
             onUsernameSettingsButtonTriggered();
         }
+
+//        if (!activeUsernames.contains(usernameLine->text()) && !usernameLine->text().isEmpty()) {
+//            activeUsernames.remove(username);
+//            activeUsernames.insert(usernameLine->text());
+//            username = usernameLine->text();
+//            sendToServer("USERNAME", username);
+//            settings->setValue("USER/USERNAME", username);
+//        } else if ((username != usernameLine->text() && activeUsernames.contains(usernameLine->text())) || usernameLine->text().isEmpty()) {
+//            onUsernameSettingsButtonTriggered();
+//        }
     }
 
     delete modalDialog;
@@ -477,9 +496,11 @@ void Client::onUserPhotoSettingsButtonTriggered() {
     userPhotoLabel->setScaledContents(true);
     photoLayout->addWidget(userPhotoLabel);
 
+    QPushButton *defaultUserPhotoButton = new QPushButton("Default");
     QPushButton *chooseUserPhotoButton = new QPushButton("Choose");
     QPushButton *saveUserPhotoButton = new QPushButton("Save");
     buttonLayout->addWidget(chooseUserPhotoButton);
+    buttonLayout->addWidget(defaultUserPhotoButton);
     buttonLayout->addWidget(saveUserPhotoButton);
 
     boxLayout->addLayout(photoLayout);
@@ -490,12 +511,14 @@ void Client::onUserPhotoSettingsButtonTriggered() {
     modalDialog->setWindowTitle("Photo settings");
     modalDialog->setLayout(boxLayout);
 
+    connect(defaultUserPhotoButton, SIGNAL(clicked()), this, SLOT(onDefaultUserPhotoButtonClicked()));
     connect(chooseUserPhotoButton, SIGNAL(clicked()), this, SLOT(onChooseUserPhotoButtonClicked()));
     connect(saveUserPhotoButton, SIGNAL(clicked()), modalDialog, SLOT(accept()));
 
     if (modalDialog->exec() == QDialog::Accepted) {
         userPhotoPath = newUserPhotoPath;
         userPhoto = QPixmap(userPhotoPath);
+        settings->setValue("USER/USERPHOTOPATH", userPhotoPath);
         sendToServer("USERPHOTO", "");
     }
 
@@ -503,13 +526,16 @@ void Client::onUserPhotoSettingsButtonTriggered() {
 }
 
 void Client::onChooseUserPhotoButtonClicked() {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Choose Photo"),
-                                                      "/home",
-                                                      tr("Images (*.png *.jpg)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Choose Photo"), "/home", tr("Images (*.png *.jpg)"));
     if (!fileName.isEmpty()) {
         newUserPhotoPath = fileName;
         userPhotoLabel->setPixmap(QPixmap(fileName));
     }
+}
+
+void Client::onDefaultUserPhotoButtonClicked() {
+    newUserPhotoPath = defaultUserPhotoPath;
+    userPhotoLabel->setPixmap(QPixmap(newUserPhotoPath));
 }
 
 void Client::onServerSettingsButtonTriggered() {
