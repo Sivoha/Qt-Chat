@@ -15,16 +15,6 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="QTextBrowser" name="messageBrowser">
-      <property name="minimumSize">
-       <size>
-        <width>650</width>
-        <height>0</height>
-       </size>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="1">
      <widget class="UserListWidget" name="userListWidget">
       <property name="maximumSize">
@@ -49,7 +39,7 @@
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QPushButton" name="sendMessageButton">
+     <widget class="SendButton" name="sendMessageButton">
       <property name="enabled">
        <bool>false</bool>
       </property>
@@ -61,6 +51,25 @@
       </property>
       <property name="text">
        <string>Send</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="MessageListWidget" name="messageListWidget">
+      <property name="minimumSize">
+       <size>
+        <width>650</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="autoScroll">
+       <bool>true</bool>
+      </property>
+      <property name="verticalScrollMode">
+       <enum>QAbstractItemView::ScrollPerItem</enum>
+      </property>
+      <property name="movement">
+       <enum>QListView::Static</enum>
       </property>
      </widget>
     </item>
@@ -132,11 +141,6 @@
     <string>Username</string>
    </property>
   </action>
-  <action name="actionbebra">
-   <property name="text">
-    <string>bebra</string>
-   </property>
-  </action>
   <action name="userPhotoSettingsButton">
    <property name="text">
     <string>User photo</string>
@@ -153,6 +157,16 @@
    <class>UserListWidget</class>
    <extends>QListWidget</extends>
    <header>userlistwidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SendButton</class>
+   <extends>QPushButton</extends>
+   <header>sendbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MessageListWidget</class>
+   <extends>QListWidget</extends>
+   <header>messagelistwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

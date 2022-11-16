@@ -6,18 +6,6 @@
 #include <UserListWidget.h>
 #include <includes.h>
 
-//enum class Status {
-//    Online,
-//    Idle,
-//    DoNotDisturb,
-//    Disconnected
-//};
-
-//static QSettings settings("D:/Documents/C++/Qt/Chat/Client/settings.ini", QSettings::IniFormat);
-
-//static QMap<Status, QString> statusToString{{Status::Online, "ONLINE"}, {Status::Idle, "IDLE"}, {Status::DoNotDisturb, "DONOTDISTURB"}, {Status::Disconnected, "DISCONNECTED"}};
-//static QMap<QString, Status> stringToStatus{{"ONLINE", Status::Online}, {"IDLE", Status::Idle}, {"DONOTDISTURB", Status::DoNotDisturb}, {"DISCONNECTED", Status::Disconnected}};
-
 namespace Ui {
 class Client;
 }
@@ -31,6 +19,9 @@ public:
 
 private slots:
     void onSendMessageButtonClicked();
+    void onSendPhotoButtonClicked();
+    void onSendMessageButtonRightClicked(QMouseEvent*);
+    void onSendPhotoButtonRightClicked(QMouseEvent*);
     void onNewMessageLineReturnPressed();
     void onConnectToServerButtonTriggered();
     void onDisconnectButtonTriggered();
@@ -47,6 +38,12 @@ private slots:
     void onStatusDoNotDisturbButtonTriggered();
     void onStatusOtherButtonTriggered();
     void onUserItemClicked(QPoint);
+    void onMessageClicked(QMouseEvent*);
+    void onOpenInFullSizeActionTriggered();
+    void onSavePhotoActionTriggered();
+
+    void onSendMessageActionTriggered();
+    void onSendPhotoActionTriggered();
 
     void slotConnected();
     void slotReadyRead();
@@ -59,6 +56,8 @@ private:
     QCheckBox *statusDoNotDisturbCheckBox;
     QCheckBox *statusOtherCheckBox;
     QLabel *userPhotoLabel;
+
+    QLabel* selectedMessageLabel;
 
     QSettings* settings;
 
@@ -78,6 +77,8 @@ private:
     void updateStatusCheckBoxes(QString);
     void setDisconnectedStatus();
 
+    void addMessageToMessageListWidget(const QString&);
+    void addPhotoToMessageListWidget(QPixmap);
     void addStatusButtonToMenu(QCheckBox**, QWidgetAction**, const QString&, bool);
     void createUserInfoDialog(const QString&, const QString&, const QString&, const QString&, const QPixmap&);
     void addLabelToDialog(QLabel**, const int, const QString&, QBoxLayout*);
@@ -88,7 +89,6 @@ private:
 
     QSslSocket *userSocket;
 
-//    QSet<QString> activeUsernames;
     QString username = "";
     bool isNewUsernameActive;
 

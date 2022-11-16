@@ -50,6 +50,7 @@ Client::Client(QWidget *parent) :
     ui->serverSettingsButton->setText("Server: " + serverIP + " " + QString::number(serverPort));
 
     connect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendMessageButtonClicked()));
+    connect(ui->sendMessageButton, SIGNAL(rightClick(QMouseEvent*)), this, SLOT(onSendMessageButtonRightClicked(QMouseEvent*)));
     connect(ui->newMessageLine, SIGNAL(returnPressed()), this, SLOT(onNewMessageLineReturnPressed()));
     connect(ui->connectToServerButton, SIGNAL(triggered()), this, SLOT(onConnectToServerButtonTriggered()));
     connect(ui->disconnectButton, SIGNAL(triggered()), this, SLOT(onDisconnectButtonTriggered()));
@@ -58,6 +59,7 @@ Client::Client(QWidget *parent) :
     connect(ui->usernameSettingsButton, SIGNAL(triggered()), this, SLOT(onUsernameSettingsButtonTriggered()));
     connect(ui->actionUser_photo, SIGNAL(triggered()), this, SLOT(onUserPhotoSettingsButtonTriggered()));
     connect(ui->serverSettingsButton, SIGNAL(triggered()), this, SLOT(onServerSettingsButtonTriggered()));
+    connect(ui->messageListWidget, SIGNAL(rightClickOnMessage(QMouseEvent*)), this, SLOT(onMessageClicked(QMouseEvent*)));
     connect(ui->userListWidget, SIGNAL(rightClick(QPoint)), this, SLOT(onUserItemClicked(QPoint)));
 
     QAction* helpAction = new QAction("Help", ui->menubar);
@@ -129,7 +131,7 @@ void Client::connectToServer() {
 //            sendToServer("USERNAME", username);
 //        }
     } else {
-        ui->messageBrowser->append(boldCurrentTime() + " You are already connected to" + serverIP + " " + QString::number(serverPort));
+        addMessageToMessageListWidget(boldCurrentTime() + " You are already connected to" + serverIP + " " + QString::number(serverPort));
     }
 }
 
@@ -139,10 +141,10 @@ void Client::disconnectFromServer() {
         settings->setValue("USER/STATUS", userStatus);
         userSocket->disconnectFromHost();
         setDisconnectedStatus();
-        ui->messageBrowser->append(boldCurrentTime() + " Disconnected from" + serverIP + " " + QString::number(serverPort));
+        addMessageToMessageListWidget(boldCurrentTime() + " Disconnected from" + serverIP + " " + QString::number(serverPort));
         ui->userListWidget->clear();
     } else {
-        ui->messageBrowser->append(boldCurrentTime() + " You are not connected to server");
+        addMessageToMessageListWidget(boldCurrentTime() + " You are not connected to server");
     }
 }
 
@@ -155,18 +157,20 @@ void Client::slotConnected() {
 
     if (!username.isEmpty()) {
         sendToServer("USERNAME", username);
-        userSocket->waitForBytesWritten(200000);
+        userSocket->waitForBytesWritten(100000);
+        userSocket->waitForReadyRead(100000);
     }
+
+    sendToServer("STATUS", userStatus);
+    userSocket->waitForBytesWritten(100000);
 
     if (userPhotoPath != defaultUserPhotoPath) {
         sendToServer("USERPHOTO", "");
-        userSocket->waitForBytesWritten(200000);
     }
-    sendToServer("STATUS", userStatus);
 
     updateWindowStatus();
     ui->serverSettingsButton->setText("Server: " + serverIP + " " + QString::number(serverPort));
-    ui->messageBrowser->append(boldCurrentTime() + " Connected to" + serverIP + " " + QString::number(serverPort));
+    addMessageToMessageListWidget(boldCurrentTime() + " Connected to" + serverIP + " " + QString::number(serverPort));
 }
 
 void Client::slotError(QAbstractSocket::SocketError /*error*/) {
@@ -175,7 +179,7 @@ void Client::slotError(QAbstractSocket::SocketError /*error*/) {
         ui->userListWidget->clear();
     }
     setDisconnectedStatus();
-    ui->messageBrowser->append(boldCurrentTime() + " Connection failed: " + userSocket->errorString());
+    addMessageToMessageListWidget(boldCurrentTime() + " Connection failed: " + userSocket->errorString());
     userSocket->disconnectFromHost();
 }
 
@@ -210,6 +214,13 @@ void Client::sendToServer(const QString& sendType, const QString& message) {
         out.device()->seek(0);
         out << quint16(messageData.size() - sizeof(quint16));
         userSocket->write(messageData);
+    } else if (sendType == "PHOTO") {
+        qDebug() << "Sending photo";
+        QPixmap photo = QPixmap(message);
+        out << quint16(0) << sendType << photo;
+        out.device()->seek(0);
+        out << quint16(messageData.size() - sizeof(quint16));
+        userSocket->write(messageData);
     }
 }
 
@@ -239,8 +250,7 @@ void Client::slotReadyRead() {
             if (userStatus != "Do Not Disturb" && senderName != username) {
                 newMessageSound->play();
             }
-
-            ui->messageBrowser->append("<b>" + messageTime.toString() + "</b> " + "<b>[" + senderIP + " : " + senderName + "]</b> " + messageText);
+            addMessageToMessageListWidget("<b>" + messageTime.toString() + "</b> " + "<b>[" + senderIP + " : " + senderName + "]</b> " + messageText);
             nextBlockSize = 0;
 
             QDomElement newMessage = message(document, messageTime.toString(), senderIP, senderName, messageText);
@@ -253,24 +263,9 @@ void Client::slotReadyRead() {
             QPixmap tempUserPhoto = QPixmap();
             for (int i = 0; i < userListSize; ++i) {
                 in >> tempUserName >> tempUserPhoto;
-//                activeUsernames.insert(tempUserName);
-//                QIcon userIcon;
-//                userIcon.addPixmap(tempUserPhoto);
                 QListWidgetItem* userItem = new QListWidgetItem(tempUserPhoto, tempUserName);
                 ui->userListWidget->addItem(userItem);
             }
-//            QString usernames;
-
-//            in >> usernames;
-//            QStringList userList = usernames.split(" ");
-
-//            for (const auto& user : userList) {
-//                if (!user.isEmpty()) {
-//                    activeUsernames.insert(user);
-//                    QListWidgetItem* userItem = new QListWidgetItem(user);
-//                    ui->userListWidget->addItem(userItem);
-//                }
-//            }
             nextBlockSize = 0;
         } else if (inType == "ACTION") {
             QString senderName;
@@ -278,9 +273,7 @@ void Client::slotReadyRead() {
             QTime actionTime;
 
             in >> actionTime >> senderName >> action;
-//            activeUsernames.insert(senderName);
-
-            ui->messageBrowser->append("<b>" + actionTime.toString() + "</b> " + "<b>" + senderName + "</b> " + action);
+            addMessageToMessageListWidget("<b>" + actionTime.toString() + "</b> " + "<b>" + senderName + "</b> " + action);
             nextBlockSize = 0;
         } else if (inType == "USERNAME") {
             QString newUsername;
@@ -288,7 +281,6 @@ void Client::slotReadyRead() {
             if (username.isEmpty()) {
                 username = newUsername;
                 settings->setValue("USER/USERNAME", username);
-//                activeUsernames.insert(username);
             }
             nextBlockSize = 0;
         } else if (inType == "USERNAMECHANGE") {
@@ -297,12 +289,7 @@ void Client::slotReadyRead() {
             QString newName;
 
             in >> changeTime >> oldName >> newName;
-//            if (activeUsernames.contains(oldName)) {
-//                activeUsernames.remove(oldName);
-//                activeUsernames.insert(newName);
-//            }
-
-            ui->messageBrowser->append("<b>" + changeTime.toString() + "</b> " + "<b>" + oldName + "</b> " + "changed name to " + "<b>" + newName + "</b>");
+            addMessageToMessageListWidget("<b>" + changeTime.toString() + "</b> " + "<b>" + oldName + "</b> " + "changed name to " + "<b>" + newName + "</b>");
             nextBlockSize = 0;
         } else if (inType == "USERINFO") {
             QString usernameInfo;
@@ -318,8 +305,33 @@ void Client::slotReadyRead() {
         } else if (inType == "ISNEWUSERNAMEACTIVE") {
             in >> isNewUsernameActive;
             nextBlockSize = 0;
+        } else if (inType == "PHOTO") {
+            QPixmap photo = QPixmap();
+            in >> photo;
+            addPhotoToMessageListWidget(photo);
+            nextBlockSize = 0;
         }
     }
+}
+
+void Client::addMessageToMessageListWidget(const QString& messageText) {
+    QLabel *messageLabel = new QLabel(messageText);
+    QListWidgetItem* messageItem = new QListWidgetItem();
+    ui->messageListWidget->addItem(messageItem);
+    ui->messageListWidget->setItemWidget(messageItem, messageLabel);
+    ui->messageListWidget->scrollToBottom();
+}
+
+void Client::addPhotoToMessageListWidget(QPixmap photo) {
+    QLabel *messageLabel = new QLabel();
+    messageLabel->setPixmap(photo);
+    messageLabel->setFixedSize(photo.width() > 240 ? 240 : photo.width(), photo.height() > 320 ? 320 : photo.height());
+    messageLabel->setScaledContents(true);
+    QListWidgetItem* messageItem = new QListWidgetItem();
+    messageItem->setSizeHint(QSize(messageLabel->width(), messageLabel->height()));
+    ui->messageListWidget->addItem(messageItem);
+    ui->messageListWidget->setItemWidget(messageItem, messageLabel);
+    ui->messageListWidget->scrollToBottom();
 }
 
 QDomElement Client::message(QDomDocument* domDoc, const QString& strTime, const QString& strIP, const QString& strName, const QString& strMessage) {
@@ -352,11 +364,56 @@ void Client::saveMessageHistory(const QString& fileName) {
 }
 
 void Client::onSendMessageButtonClicked() {
-    sendToServer("MESSAGE", ui->newMessageLine->text());
+    if (!ui->newMessageLine->text().isEmpty()) {
+       sendToServer("MESSAGE", ui->newMessageLine->text());
+    }
+}
+
+void Client::onSendMessageButtonRightClicked(QMouseEvent* event) {
+    QMenu actionMenu(this);
+    QAction* sendPhoto = new QAction("Send Photo", &actionMenu);
+    actionMenu.addAction(sendPhoto);
+    actionMenu.connect(sendPhoto, SIGNAL(triggered()), this, SLOT(onSendPhotoActionTriggered()));
+    actionMenu.exec(event->globalPos());
+}
+
+void Client::onSendPhotoButtonRightClicked(QMouseEvent* event) {
+    QMenu actionMenu(this);
+    QAction* sendMessage = new QAction("Send Message", &actionMenu);
+    actionMenu.addAction(sendMessage);
+    actionMenu.connect(sendMessage, SIGNAL(triggered()), this, SLOT(onSendMessageActionTriggered()));
+    actionMenu.exec(event->globalPos());
+}
+
+void Client::onSendMessageActionTriggered() {
+    disconnect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendPhotoButtonClicked()));
+    ui->newMessageLine->setDisabled(false);
+    disconnect(ui->sendMessageButton, SIGNAL(rightClick(QMouseEvent*)), this, SLOT(onSendPhotoButtonRightClicked(QMouseEvent*)));
+    connect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendMessageButtonClicked()));
+    connect(ui->sendMessageButton, SIGNAL(rightClick(QMouseEvent*)), this, SLOT(onSendMessageButtonRightClicked(QMouseEvent*)));
+    ui->sendMessageButton->setText("Send message");
+}
+
+void Client::onSendPhotoActionTriggered() {
+    disconnect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendMessageButtonClicked()));
+    ui->newMessageLine->setDisabled(true);
+    disconnect(ui->sendMessageButton, SIGNAL(rightClick(QMouseEvent*)), this, SLOT(onSendMessageButtonRightClicked(QMouseEvent*)));
+    connect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendPhotoButtonClicked()));
+    connect(ui->sendMessageButton, SIGNAL(rightClick(QMouseEvent*)), this, SLOT(onSendPhotoButtonRightClicked(QMouseEvent*)));
+    ui->sendMessageButton->setText("Send photo");
+}
+
+void Client::onSendPhotoButtonClicked() {
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Choose Photo"), "/home", tr("Images (*.png *.jpg)"));
+    if (!fileName.isEmpty()) {
+        sendToServer("PHOTO", fileName);
+    }
 }
 
 void Client::onNewMessageLineReturnPressed() {
-    sendToServer("MESSAGE", ui->newMessageLine->text());
+    if (!ui->newMessageLine->text().isEmpty()) {
+       sendToServer("MESSAGE", ui->newMessageLine->text());
+    }
 }
 
 
@@ -470,16 +527,6 @@ void Client::onUsernameSettingsButtonTriggered() {
         } else if ((username != usernameLine->text() && isNewUsernameActive) || usernameLine->text().isEmpty()) {
             onUsernameSettingsButtonTriggered();
         }
-
-//        if (!activeUsernames.contains(usernameLine->text()) && !usernameLine->text().isEmpty()) {
-//            activeUsernames.remove(username);
-//            activeUsernames.insert(usernameLine->text());
-//            username = usernameLine->text();
-//            sendToServer("USERNAME", username);
-//            settings->setValue("USER/USERNAME", username);
-//        } else if ((username != usernameLine->text() && activeUsernames.contains(usernameLine->text())) || usernameLine->text().isEmpty()) {
-//            onUsernameSettingsButtonTriggered();
-//        }
     }
 
     delete modalDialog;
@@ -658,6 +705,56 @@ void Client::updateUserStatus(QString newStatus) {
     }
 }
 
+void Client::onMessageClicked(QMouseEvent* event) {
+    QListWidgetItem* selectedMessage = ui->messageListWidget->itemAt(event->pos());
+    selectedMessageLabel = dynamic_cast<QLabel*>(ui->messageListWidget->itemWidget(selectedMessage));
+    if (selectedMessageLabel->text().isEmpty()) {
+        QMenu actionMenu(this);
+        QAction* openInFullSizeAction = new QAction("Open in full size", &actionMenu);
+        QAction* savePhotoAction = new QAction("Save photo", &actionMenu);
+        actionMenu.addAction(openInFullSizeAction);
+        actionMenu.addAction(savePhotoAction);
+        actionMenu.connect(openInFullSizeAction, SIGNAL(triggered()), this, SLOT(onOpenInFullSizeActionTriggered()));
+        actionMenu.connect(savePhotoAction, SIGNAL(triggered()), this, SLOT(onSavePhotoActionTriggered()));
+        actionMenu.exec(event->globalPos());
+    }
+}
+
+void Client::onOpenInFullSizeActionTriggered() {
+    QBoxLayout* boxLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+
+    const QPixmap *photo = selectedMessageLabel->pixmap();
+    QLabel* photoLabel = new QLabel();
+    photoLabel->setPixmap(*photo);
+    photoLabel->setScaledContents(true);
+    boxLayout->addWidget(photoLabel);
+
+    QPushButton *closeFullSizePhotoButton = new QPushButton("Close");
+    boxLayout->addWidget(closeFullSizePhotoButton);
+
+    QDialog *modalDialog = new QDialog();
+    modalDialog->setModal(false);
+    modalDialog->setWindowTitle("Photo");
+    modalDialog->setLayout(boxLayout);
+    connect(closeFullSizePhotoButton, SIGNAL(clicked()), modalDialog, SLOT(accept()));
+    if (modalDialog->exec() == QDialog::Accepted) {
+        delete modalDialog;
+    }
+}
+
+void Client::onSavePhotoActionTriggered() {
+    const QPixmap *photo = selectedMessageLabel->pixmap();
+    QString strFilter = "*.png";
+    QString savePhotoPath = QFileDialog::getSaveFileName(0, "Save photo", "/home", "*.png *.jpg", &strFilter);
+    if (!savePhotoPath.isEmpty()) {
+       if (strFilter.contains("jpg")) {
+          photo->save(savePhotoPath, "JPG");
+       } else if (strFilter.contains("png")) {
+          photo->save(savePhotoPath, "PNG");
+       }
+    }
+}
+
 void Client::onUserItemClicked(QPoint pos) {
     QListWidgetItem* item = ui->userListWidget->itemAt(pos);
     if (item != nullptr) {
@@ -677,12 +774,10 @@ void Client::addStatusButtonToMenu(QCheckBox** checkBox, QWidgetAction** widgetA
     } else {
        (*checkBox)->setText(checkBoxText);
     }
-//    (*checkBox)->setIcon(QPixmap(checkBoxIcon));
     (*checkBox)->setChecked(isChecked);
     *widgetAction = new QWidgetAction(ui->menuStatus);
     (*widgetAction)->setDefaultWidget(*checkBox);
     ui->menuStatus->addAction(*widgetAction);
-//    ui->menuStatus->setIcon(QPixmap(checkBoxIcon));
 }
 
 void Client::createUserInfoDialog(const QString& usernameInfo, const QString& userIPInfo, const QString& userConnectionTimeInfo, const QString& userStatusInfo, const QPixmap& userPhotoInfo) {

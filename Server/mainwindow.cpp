@@ -48,7 +48,7 @@ void MainWindow::onNetworkSettingsButtonTriggered() {
     QDialog *modalDialog = new QDialog(this);
     modalDialog->setModal(true);
     modalDialog->setWindowTitle("Network settings");
-    modalDialog->setMinimumWidth(150);
+    modalDialog->setMinimumWidth(220);
     QPushButton *saveUsernameButton = new QPushButton("Save");
     boxLayout->addWidget(saveUsernameButton);
     connect(saveUsernameButton, SIGNAL(clicked()), modalDialog, SLOT(accept()));
@@ -61,9 +61,6 @@ void MainWindow::onNetworkSettingsButtonTriggered() {
             server->close();
             server->listen(QHostAddress(server->IP), server->port);
             updateWindowTitle();
-//            settings->setValue("SERVER/IP", serverIP);
-//            settings->setValue("SERVER/PORT", QString::number(serverPort));
-//            ui->serverSettingsButton->setText("Server: " + serverIP + " " + QString::number(serverPort));
         } else {
             onNetworkSettingsButtonTriggered();
         }

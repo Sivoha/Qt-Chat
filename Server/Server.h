@@ -19,7 +19,8 @@ private:
 
     void setUpServer();
 
-    void sendToClient(const QString&);
+    void sendMessageToClient(const QString&);
+    void sendPhotoToClient(QPixmap);
     void sendUserListToClient();
     void sendUserInfoToClient(const QString&);
     void sendUsernameChangeLog(const QString&, const QString&);

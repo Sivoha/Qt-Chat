@@ -31,5 +31,8 @@
 #include <QFileDialog>
 #include <QBuffer>
 #include <QIcon>
+#include <QTextEdit>
+#include <QTextBrowser>
+#include <QSizeF>
 
 #endif // INCLUDES_H

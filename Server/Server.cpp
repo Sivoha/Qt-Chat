@@ -87,8 +87,6 @@ void Server::disconnectEvent() {
 
 void Server::slotReadyRead() {
     socket = (QSslSocket*)sender();
-//    QByteArray test2 = socket->readAll();
-//    qDebug() << "HERE " << test2.size();
     QDataStream in(socket);
     while (true) {
         if (nextBlockSize == 0) {
@@ -108,7 +106,7 @@ void Server::slotReadyRead() {
             QTime messageTime;
             in >> messageTime >> messageText;
             nextBlockSize = 0;
-            sendToClient(messageText);
+            sendMessageToClient(messageText);
         } else if (sendType == "USERNAME") {
             QString newUsername;
             in >> newUsername;
@@ -140,6 +138,14 @@ void Server::slotReadyRead() {
             in >> newUsername;
             sendUsernameStatusToClient(newUsername);
             nextBlockSize = 0;
+        } else if (sendType == "PHOTO") {
+            qDebug() << "Receive photo";
+            QPixmap photo = QPixmap();
+            in >> photo;
+            qDebug() << "Photo size" << photo.size();
+            nextBlockSize = 0;
+            sendMessageToClient("");
+            sendPhotoToClient(photo);
         }
         break;
     }
@@ -168,11 +174,24 @@ void Server::test() {
 
 }
 
-void Server::sendToClient(const QString &str) {
+void Server::sendMessageToClient(const QString &str) {
     QString sendType = "MESSAGE";
     sendData.clear();
     QDataStream out(&sendData, QIODevice::WriteOnly);
     out << quint16(0) << sendType << QTime::currentTime() << userList[socket].userIP << userList[socket].username << str;
+    out.device()->seek(0);
+    out << quint16(sendData.size() - sizeof(quint16));
+    for (const auto& userSocket : userList.keys()) {
+        userSocket->write(sendData);
+    }
+}
+
+void Server::sendPhotoToClient(QPixmap photo) {
+    qDebug() << "Sending photo to client";
+    QString sendType = "PHOTO";
+    sendData.clear();
+    QDataStream out(&sendData, QIODevice::WriteOnly);
+    out << quint16(0) << sendType << photo;
     out.device()->seek(0);
     out << quint16(sendData.size() - sizeof(quint16));
     for (const auto& userSocket : userList.keys()) {
@@ -185,11 +204,6 @@ void Server::sendUserListToClient() {
     sendData.clear();
     QDataStream out(&sendData, QIODevice::WriteOnly);
 
-//    QString usernames = "";
-//    foreach(User user, userList) {
-//        usernames += user.username + " ";
-//    }
-//    out << quint16(0) << sendType << usernames;
     out << quint16(0) << sendType << userList.size();
     foreach(User user, userList) {
         out << user.username << user.userPhoto;

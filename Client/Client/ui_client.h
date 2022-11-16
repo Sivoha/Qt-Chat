@@ -17,10 +17,10 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
-#include <QtWidgets/QPushButton>
 #include <QtWidgets/QStatusBar>
-#include <QtWidgets/QTextBrowser>
 #include <QtWidgets/QWidget>
+#include "messagelistwidget.h"
+#include "sendbutton.h"
 #include "userlistwidget.h"
 
 QT_BEGIN_NAMESPACE
@@ -34,15 +34,14 @@ public:
     QAction *exitButton;
     QAction *serverSettingsButton;
     QAction *usernameSettingsButton;
-    QAction *actionbebra;
     QAction *userPhotoSettingsButton;
     QAction *actionUser_photo;
     QWidget *centralwidget;
     QGridLayout *gridLayout;
-    QTextBrowser *messageBrowser;
     UserListWidget *userListWidget;
     QLineEdit *newMessageLine;
-    QPushButton *sendMessageButton;
+    SendButton *sendMessageButton;
+    MessageListWidget *messageListWidget;
     QMenuBar *menubar;
     QMenu *menuFile;
     QMenu *menuSettings;
@@ -66,8 +65,6 @@ public:
         serverSettingsButton->setObjectName(QString::fromUtf8("serverSettingsButton"));
         usernameSettingsButton = new QAction(Client);
         usernameSettingsButton->setObjectName(QString::fromUtf8("usernameSettingsButton"));
-        actionbebra = new QAction(Client);
-        actionbebra->setObjectName(QString::fromUtf8("actionbebra"));
         userPhotoSettingsButton = new QAction(Client);
         userPhotoSettingsButton->setObjectName(QString::fromUtf8("userPhotoSettingsButton"));
         actionUser_photo = new QAction(Client);
@@ -76,12 +73,6 @@ public:
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         gridLayout = new QGridLayout(centralwidget);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
-        messageBrowser = new QTextBrowser(centralwidget);
-        messageBrowser->setObjectName(QString::fromUtf8("messageBrowser"));
-        messageBrowser->setMinimumSize(QSize(650, 0));
-
-        gridLayout->addWidget(messageBrowser, 0, 0, 1, 1);
-
         userListWidget = new UserListWidget(centralwidget);
         userListWidget->setObjectName(QString::fromUtf8("userListWidget"));
         userListWidget->setMaximumSize(QSize(300, 16777215));
@@ -95,12 +86,21 @@ public:
 
         gridLayout->addWidget(newMessageLine, 1, 0, 1, 1);
 
-        sendMessageButton = new QPushButton(centralwidget);
+        sendMessageButton = new SendButton(centralwidget);
         sendMessageButton->setObjectName(QString::fromUtf8("sendMessageButton"));
         sendMessageButton->setEnabled(false);
         sendMessageButton->setMaximumSize(QSize(300, 16777215));
 
         gridLayout->addWidget(sendMessageButton, 1, 1, 1, 1);
+
+        messageListWidget = new MessageListWidget(centralwidget);
+        messageListWidget->setObjectName(QString::fromUtf8("messageListWidget"));
+        messageListWidget->setMinimumSize(QSize(650, 0));
+        messageListWidget->setAutoScroll(true);
+        messageListWidget->setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
+        messageListWidget->setMovement(QListView::Static);
+
+        gridLayout->addWidget(messageListWidget, 0, 0, 1, 1);
 
         Client->setCentralWidget(centralwidget);
         menubar = new QMenuBar(Client);
@@ -142,7 +142,6 @@ public:
         exitButton->setText(QCoreApplication::translate("Client", "Exit", nullptr));
         serverSettingsButton->setText(QCoreApplication::translate("Client", "Server: ", nullptr));
         usernameSettingsButton->setText(QCoreApplication::translate("Client", "Username", nullptr));
-        actionbebra->setText(QCoreApplication::translate("Client", "bebra", nullptr));
         userPhotoSettingsButton->setText(QCoreApplication::translate("Client", "User photo", nullptr));
         actionUser_photo->setText(QCoreApplication::translate("Client", "User photo", nullptr));
         sendMessageButton->setText(QCoreApplication::translate("Client", "Send", nullptr));
