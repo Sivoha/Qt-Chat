@@ -288,4 +288,3 @@ void Server::sendUsernameStatusToClient(const QString& newUsername) {
 
     socket->write(sendData);
 }
-

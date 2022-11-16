@@ -23,5 +23,6 @@
 #include <QDialog>
 #include <QPixmap>
 #include <QSet>
+#include <QBuffer>
 
 #endif // INCLUDES_H

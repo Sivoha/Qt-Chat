@@ -97,7 +97,7 @@ public:
         messageListWidget->setObjectName(QString::fromUtf8("messageListWidget"));
         messageListWidget->setMinimumSize(QSize(650, 0));
         messageListWidget->setAutoScroll(true);
-        messageListWidget->setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
+        messageListWidget->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
         messageListWidget->setMovement(QListView::Static);
 
         gridLayout->addWidget(messageListWidget, 0, 0, 1, 1);
@@ -144,7 +144,7 @@ public:
         usernameSettingsButton->setText(QCoreApplication::translate("Client", "Username", nullptr));
         userPhotoSettingsButton->setText(QCoreApplication::translate("Client", "User photo", nullptr));
         actionUser_photo->setText(QCoreApplication::translate("Client", "User photo", nullptr));
-        sendMessageButton->setText(QCoreApplication::translate("Client", "Send", nullptr));
+        sendMessageButton->setText(QCoreApplication::translate("Client", "Send message", nullptr));
         menuFile->setTitle(QCoreApplication::translate("Client", "File", nullptr));
         menuSettings->setTitle(QCoreApplication::translate("Client", "Settings", nullptr));
         menuStatus->setTitle(QCoreApplication::translate("Client", "Status", nullptr));

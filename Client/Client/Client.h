@@ -64,6 +64,7 @@ private:
     QDomDocument* document;
     QDomElement domElement;
 
+    QDomElement photo(QDomDocument*, QPixmap);
     QDomElement message(QDomDocument*, const QString&, const QString&, const QString&, const QString&);
     QDomElement makeElement(QDomDocument*, const QString&, const QString&);
 

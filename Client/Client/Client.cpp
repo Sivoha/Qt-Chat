@@ -306,20 +306,35 @@ void Client::slotReadyRead() {
             in >> isNewUsernameActive;
             nextBlockSize = 0;
         } else if (inType == "PHOTO") {
-            QPixmap photo = QPixmap();
-            in >> photo;
-            addPhotoToMessageListWidget(photo);
+            QPixmap sendedPhoto = QPixmap();
+            in >> sendedPhoto;
+            addPhotoToMessageListWidget(sendedPhoto);
             nextBlockSize = 0;
+            QPixmap photoCopy = sendedPhoto.scaled(240, 320);
+            QDomElement newPhoto = photo(document, photoCopy);
+            domElement.appendChild(newPhoto);
         }
     }
 }
 
 void Client::addMessageToMessageListWidget(const QString& messageText) {
-    QLabel *messageLabel = new QLabel(messageText);
     QListWidgetItem* messageItem = new QListWidgetItem();
+    QTextEdit *messageLabel = new QTextEdit(messageText);
+    messageLabel->setAlignment(Qt::AlignVCenter);
+    messageItem->setSizeHint(QSize(0, 30));
     ui->messageListWidget->addItem(messageItem);
     ui->messageListWidget->setItemWidget(messageItem, messageLabel);
     ui->messageListWidget->scrollToBottom();
+
+//    QString str = "";
+//    for (int i = 0; i < messageText.length() + 120; ++i) {
+//        str += " ";
+//    }
+//    QListWidgetItem* messageItem = new QListWidgetItem();
+//    QLabel *messageLabel = new QLabel(messageText);
+//    ui->messageListWidget->addItem(messageItem);
+//    ui->messageListWidget->setItemWidget(messageItem, messageLabel);
+//    ui->messageListWidget->scrollToBottom();
 }
 
 void Client::addPhotoToMessageListWidget(QPixmap photo) {
@@ -341,6 +356,15 @@ QDomElement Client::message(QDomDocument* domDoc, const QString& strTime, const 
     domElement.appendChild(makeElement(domDoc, "name", strName));
     domElement.appendChild(makeElement(domDoc, "text", strMessage));
 
+    return domElement;
+}
+
+QDomElement Client::photo(QDomDocument* domDoc, QPixmap sendedPhoto) {
+    QDomElement domElement = makeElement(domDoc, "photo", "");
+    QBuffer buffer;
+    buffer.open(QIODevice::WriteOnly);
+    sendedPhoto.save(&buffer, "PNG");
+    domElement.appendChild(makeElement(domDoc, "Base64", QString(buffer.data().toBase64())));
     return domElement;
 }
 
@@ -404,7 +428,7 @@ void Client::onSendPhotoActionTriggered() {
 }
 
 void Client::onSendPhotoButtonClicked() {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Choose Photo"), "/home", tr("Images (*.png *.jpg)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Choose Photo"), "/home", tr("Images (*.png)"));
     if (!fileName.isEmpty()) {
         sendToServer("PHOTO", fileName);
     }
@@ -573,7 +597,7 @@ void Client::onUserPhotoSettingsButtonTriggered() {
 }
 
 void Client::onChooseUserPhotoButtonClicked() {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Choose Photo"), "/home", tr("Images (*.png *.jpg)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Choose Photo"), "/home", tr("Images (*.png)"));
     if (!fileName.isEmpty()) {
         newUserPhotoPath = fileName;
         userPhotoLabel->setPixmap(QPixmap(fileName));
@@ -745,13 +769,9 @@ void Client::onOpenInFullSizeActionTriggered() {
 void Client::onSavePhotoActionTriggered() {
     const QPixmap *photo = selectedMessageLabel->pixmap();
     QString strFilter = "*.png";
-    QString savePhotoPath = QFileDialog::getSaveFileName(0, "Save photo", "/home", "*.png *.jpg", &strFilter);
+    QString savePhotoPath = QFileDialog::getSaveFileName(0, "Save photo", "/home", "*.png", &strFilter);
     if (!savePhotoPath.isEmpty()) {
-       if (strFilter.contains("jpg")) {
-          photo->save(savePhotoPath, "JPG");
-       } else if (strFilter.contains("png")) {
-          photo->save(savePhotoPath, "PNG");
-       }
+        photo->save(savePhotoPath, "PNG");
     }
 }
 
