@@ -6,6 +6,14 @@
 #include <QMouseEvent>
 #include <QDebug>
 #include <QWidget>
+#include <QTime>
+
+typedef struct {
+    QString messageTime;
+    QString senderIP;
+    QString senderName;
+    QString messageText;
+} Message;
 
 class MessageListWidget : public QListWidget {
     Q_OBJECT

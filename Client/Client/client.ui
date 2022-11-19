@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>754</width>
+    <width>757</width>
     <height>359</height>
    </rect>
   </property>
@@ -80,7 +80,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>754</width>
+     <width>757</width>
      <height>21</height>
     </rect>
    </property>
@@ -104,11 +104,19 @@
     </widget>
     <addaction name="serverSettingsButton"/>
     <addaction name="usernameSettingsButton"/>
-    <addaction name="actionUser_photo"/>
+    <addaction name="userPhotoSettingsButton"/>
     <addaction name="menuStatus"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="backgroundColorSettingsButton"/>
+    <addaction name="messageColorSettingsButton"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSettings"/>
+   <addaction name="menuView"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="connectToServerButton">
@@ -141,12 +149,17 @@
     <string>Username</string>
    </property>
   </action>
-  <action name="userPhotoSettingsButton">
+  <action name="backgroundColorSettingsButton">
    <property name="text">
-    <string>User photo</string>
+    <string>Background color</string>
    </property>
   </action>
-  <action name="actionUser_photo">
+  <action name="messageColorSettingsButton">
+   <property name="text">
+    <string>Messages color</string>
+   </property>
+  </action>
+  <action name="userPhotoSettingsButton">
    <property name="text">
     <string>User photo</string>
    </property>

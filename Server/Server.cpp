@@ -68,7 +68,7 @@ void Server::incomingConnection(qintptr socketDescriptor) {
     activeUsernames.insert(userList[socket].username);
 
     emit updateWindowTitleEvent();
-    emit logEvent("<b>" + QTime::currentTime().toString() + "</b> " + userList[socket].username + " connected");
+    emit logEvent(userList[socket].username + " connected");
 
     sendToClient(true);
     sendUsernameToClient(userList[socket].username);
@@ -78,7 +78,7 @@ void Server::incomingConnection(qintptr socketDescriptor) {
 void Server::disconnectEvent() {
     socket = qobject_cast<QSslSocket*>(sender());
     sendToClient(false);
-    emit logEvent("<b>" + QTime::currentTime().toString() + "</b> " + userList[socket].username + " disconnected");
+    emit logEvent(userList[socket].username + " disconnected");
     userList.remove(socket);
     numberOfClients--;
     emit updateWindowTitleEvent();
@@ -129,7 +129,6 @@ void Server::slotReadyRead() {
         } else if (sendType == "USERPHOTO") {
             QPixmap newUserPhoto = QPixmap();
             in >> newUserPhoto;
-            qDebug() << newUserPhoto.size();
             userList[socket].userPhoto = newUserPhoto;
             nextBlockSize = 0;
             sendUserListToClient();
@@ -139,10 +138,8 @@ void Server::slotReadyRead() {
             sendUsernameStatusToClient(newUsername);
             nextBlockSize = 0;
         } else if (sendType == "PHOTO") {
-            qDebug() << "Receive photo";
             QPixmap photo = QPixmap();
             in >> photo;
-            qDebug() << "Photo size" << photo.size();
             nextBlockSize = 0;
             sendMessageToClient("");
             sendPhotoToClient(photo);
@@ -187,11 +184,10 @@ void Server::sendMessageToClient(const QString &str) {
 }
 
 void Server::sendPhotoToClient(QPixmap photo) {
-    qDebug() << "Sending photo to client";
     QString sendType = "PHOTO";
     sendData.clear();
     QDataStream out(&sendData, QIODevice::WriteOnly);
-    out << quint16(0) << sendType << photo;
+    out << quint16(0) << sendType << QTime::currentTime() << userList[socket].userIP << userList[socket].username << photo;
     out.device()->seek(0);
     out << quint16(sendData.size() - sizeof(quint16));
     for (const auto& userSocket : userList.keys()) {

@@ -24,5 +24,8 @@
 #include <QPixmap>
 #include <QSet>
 #include <QBuffer>
+#include <QDomDocument>
+#include <QDomElement>
+#include <QCheckBox>
 
 #endif // INCLUDES_H

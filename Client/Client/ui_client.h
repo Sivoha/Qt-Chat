@@ -34,8 +34,9 @@ public:
     QAction *exitButton;
     QAction *serverSettingsButton;
     QAction *usernameSettingsButton;
+    QAction *backgroundColorSettingsButton;
+    QAction *messageColorSettingsButton;
     QAction *userPhotoSettingsButton;
-    QAction *actionUser_photo;
     QWidget *centralwidget;
     QGridLayout *gridLayout;
     UserListWidget *userListWidget;
@@ -46,13 +47,14 @@ public:
     QMenu *menuFile;
     QMenu *menuSettings;
     QMenu *menuStatus;
+    QMenu *menuView;
     QStatusBar *statusbar;
 
     void setupUi(QMainWindow *Client)
     {
         if (Client->objectName().isEmpty())
             Client->setObjectName(QString::fromUtf8("Client"));
-        Client->resize(754, 359);
+        Client->resize(757, 359);
         connectToServerButton = new QAction(Client);
         connectToServerButton->setObjectName(QString::fromUtf8("connectToServerButton"));
         disconnectButton = new QAction(Client);
@@ -65,10 +67,12 @@ public:
         serverSettingsButton->setObjectName(QString::fromUtf8("serverSettingsButton"));
         usernameSettingsButton = new QAction(Client);
         usernameSettingsButton->setObjectName(QString::fromUtf8("usernameSettingsButton"));
+        backgroundColorSettingsButton = new QAction(Client);
+        backgroundColorSettingsButton->setObjectName(QString::fromUtf8("backgroundColorSettingsButton"));
+        messageColorSettingsButton = new QAction(Client);
+        messageColorSettingsButton->setObjectName(QString::fromUtf8("messageColorSettingsButton"));
         userPhotoSettingsButton = new QAction(Client);
         userPhotoSettingsButton->setObjectName(QString::fromUtf8("userPhotoSettingsButton"));
-        actionUser_photo = new QAction(Client);
-        actionUser_photo->setObjectName(QString::fromUtf8("actionUser_photo"));
         centralwidget = new QWidget(Client);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         gridLayout = new QGridLayout(centralwidget);
@@ -105,13 +109,15 @@ public:
         Client->setCentralWidget(centralwidget);
         menubar = new QMenuBar(Client);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 754, 21));
+        menubar->setGeometry(QRect(0, 0, 757, 21));
         menuFile = new QMenu(menubar);
         menuFile->setObjectName(QString::fromUtf8("menuFile"));
         menuSettings = new QMenu(menubar);
         menuSettings->setObjectName(QString::fromUtf8("menuSettings"));
         menuStatus = new QMenu(menuSettings);
         menuStatus->setObjectName(QString::fromUtf8("menuStatus"));
+        menuView = new QMenu(menubar);
+        menuView->setObjectName(QString::fromUtf8("menuView"));
         Client->setMenuBar(menubar);
         statusbar = new QStatusBar(Client);
         statusbar->setObjectName(QString::fromUtf8("statusbar"));
@@ -119,14 +125,17 @@ public:
 
         menubar->addAction(menuFile->menuAction());
         menubar->addAction(menuSettings->menuAction());
+        menubar->addAction(menuView->menuAction());
         menuFile->addAction(connectToServerButton);
         menuFile->addAction(disconnectButton);
         menuFile->addAction(saveHistoryButton);
         menuFile->addAction(exitButton);
         menuSettings->addAction(serverSettingsButton);
         menuSettings->addAction(usernameSettingsButton);
-        menuSettings->addAction(actionUser_photo);
+        menuSettings->addAction(userPhotoSettingsButton);
         menuSettings->addAction(menuStatus->menuAction());
+        menuView->addAction(backgroundColorSettingsButton);
+        menuView->addAction(messageColorSettingsButton);
 
         retranslateUi(Client);
 
@@ -142,12 +151,14 @@ public:
         exitButton->setText(QCoreApplication::translate("Client", "Exit", nullptr));
         serverSettingsButton->setText(QCoreApplication::translate("Client", "Server: ", nullptr));
         usernameSettingsButton->setText(QCoreApplication::translate("Client", "Username", nullptr));
+        backgroundColorSettingsButton->setText(QCoreApplication::translate("Client", "Background color", nullptr));
+        messageColorSettingsButton->setText(QCoreApplication::translate("Client", "Messages color", nullptr));
         userPhotoSettingsButton->setText(QCoreApplication::translate("Client", "User photo", nullptr));
-        actionUser_photo->setText(QCoreApplication::translate("Client", "User photo", nullptr));
         sendMessageButton->setText(QCoreApplication::translate("Client", "Send message", nullptr));
         menuFile->setTitle(QCoreApplication::translate("Client", "File", nullptr));
         menuSettings->setTitle(QCoreApplication::translate("Client", "Settings", nullptr));
         menuStatus->setTitle(QCoreApplication::translate("Client", "Status", nullptr));
+        menuView->setTitle(QCoreApplication::translate("Client", "View", nullptr));
     } // retranslateUi
 
 };

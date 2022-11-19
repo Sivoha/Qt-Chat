@@ -4,6 +4,7 @@
 #include <helpdialog.h>
 #include <userinfodialog.h>
 #include <UserListWidget.h>
+#include <MessageListWidget.h>
 #include <includes.h>
 
 namespace Ui {
@@ -22,28 +23,40 @@ private slots:
     void onSendPhotoButtonClicked();
     void onSendMessageButtonRightClicked(QMouseEvent*);
     void onSendPhotoButtonRightClicked(QMouseEvent*);
+    void onSendMessageActionTriggered();
+    void onSendPhotoActionTriggered();
     void onNewMessageLineReturnPressed();
+
     void onConnectToServerButtonTriggered();
     void onDisconnectButtonTriggered();
     void onSaveHistoryButtonTriggered();
+    void changePasswordView(int);
     void onExitButtonTriggered();
-    void onHelpButtonTriggered();
+
+    void onServerSettingsButtonTriggered();
     void onUsernameSettingsButtonTriggered();
     void onUserPhotoSettingsButtonTriggered();
     void onChooseUserPhotoButtonClicked();
     void onDefaultUserPhotoButtonClicked();
-    void onServerSettingsButtonTriggered();
     void onStatusOnlineButtonTriggered();
     void onStatusIdleButtonTriggered();
     void onStatusDoNotDisturbButtonTriggered();
     void onStatusOtherButtonTriggered();
+
+    void onShowSenderIPButtonTriggered();
+    void onShowMessageTimeButtonTriggered();
+    void onBackgroundColorSettingsButtonTriggered();
+    void onMessageColorSettingsButtonTriggered();
+    void onSenderInfoColorSettingsButtonClicked();
+    void onMessageTextColorSettingsButtonClicked();
+
+    void onHelpButtonTriggered();
+
     void onUserItemClicked(QPoint);
+
     void onMessageClicked(QMouseEvent*);
     void onOpenInFullSizeActionTriggered();
     void onSavePhotoActionTriggered();
-
-    void onSendMessageActionTriggered();
-    void onSendPhotoActionTriggered();
 
     void slotConnected();
     void slotReadyRead();
@@ -51,11 +64,26 @@ private slots:
 
 private:
     Ui::Client *ui;
+
     QCheckBox *statusOnlineCheckBox;
     QCheckBox *statusIdleCheckBox;
     QCheckBox *statusDoNotDisturbCheckBox;
     QCheckBox *statusOtherCheckBox;
+
+    QCheckBox *showSenderIPCheckBox;
+    QCheckBox *showMessageTimeCheckBox;
+    bool isSenderIPEnabled = true;
+    bool isMessageTimeEnabled = true;
+
+    QColor messageListBackgroundColor = QColor(255, 255, 255);
+    QColor senderInfoColor = QColor(0, 0, 0);
+    QColor messageTextColor = QColor(0, 0, 0);
+    QList<Message> messageList;
+    QList<QLabel*> messageLabelList;
+
     QLabel *userPhotoLabel;
+
+    QLineEdit *passwordLine;
 
     QLabel* selectedMessageLabel;
 
@@ -64,7 +92,7 @@ private:
     QDomDocument* document;
     QDomElement domElement;
 
-    QDomElement photo(QDomDocument*, QPixmap);
+    QDomElement photo(QDomDocument*, const QString&, const QString&, const QString&, QPixmap);
     QDomElement message(QDomDocument*, const QString&, const QString&, const QString&, const QString&);
     QDomElement makeElement(QDomDocument*, const QString&, const QString&);
 
@@ -75,12 +103,17 @@ private:
 
     void updateWindowStatus();
     void updateUserStatus(QString);
+    QString getShortStatus(QString);
     void updateStatusCheckBoxes(QString);
     void setDisconnectedStatus();
 
+    void addMessageToMessageListWidget(Message);
+    QString constructMessage(Message);
     void addMessageToMessageListWidget(const QString&);
+    void updateMessages();
     void addPhotoToMessageListWidget(QPixmap);
     void addStatusButtonToMenu(QCheckBox**, QWidgetAction**, const QString&, bool);
+    void addButtonToViewMenu(QCheckBox**, QWidgetAction**, const QString&);
     void createUserInfoDialog(const QString&, const QString&, const QString&, const QString&, const QPixmap&);
     void addLabelToDialog(QLabel**, const int, const QString&, QBoxLayout*);
 
@@ -109,6 +142,8 @@ private:
 
     QString serverIP = "127.0.0.1";
     quint16 serverPort = (quint16)45678;
+
+    QString date;
 };
 
 #endif // CLIENT_H

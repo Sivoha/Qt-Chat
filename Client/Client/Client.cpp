@@ -5,6 +5,7 @@ Client::Client(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Client)
 {
+    date = QDate::currentDate().toString("dd.MM.yy");
     this->setWindowTitle("Disconnected");
     ui->setupUi(this);
 
@@ -38,6 +39,26 @@ Client::Client(QWidget *parent) :
         settings->setValue("USER/USERPHOTOPATH", defaultUserPhotoPath);
     }
 
+    if (!settings->contains("VIEW/SHOWIP")) {
+        settings->setValue("VIEW/SHOWIP", true);
+    }
+
+    if (!settings->contains("VIEW/SHOWTIME")) {
+        settings->setValue("VIEW/SHOWTIME", true);
+    }
+
+    if (!settings->contains("VIEW/BACKGROUNDCOLOR")) {
+        settings->setValue("VIEW/BACKGROUNDCOLOR", "0 0 0");
+    }
+
+    if (!settings->contains("VIEW/SENDERINFOCOLOR")) {
+        settings->setValue("VIEW/SENDERINFOCOLOR", "255 255 255");
+    }
+
+    if (!settings->contains("VIEW/MESSAGETEXTCOLOR")) {
+        settings->setValue("VIEW/MESSAGETEXTCOLOR", "255 255 255");
+    }
+
     serverIP = settings->value("SERVER/IP", "").toString();
     serverPort = settings->value("SERVER/PORT", "").toUInt();
     userStatusBeforeDisconnect = settings->value("USER/STATUS", "").toString();
@@ -46,6 +67,18 @@ Client::Client(QWidget *parent) :
     username = settings->value("USER/USERNAME", "").toString();
     userPhotoPath = settings->value("USER/USERPHOTOPATH").toString();
     userPhoto = QPixmap(userPhotoPath);
+    isSenderIPEnabled = settings->value("VIEW/SHOWIP").toBool();
+    isMessageTimeEnabled = settings->value("VIEW/SHOWTIME").toBool();
+
+    QString messageListBackgroundColorString = settings->value("VIEW/BACKGROUNDCOLOR").toString();
+    messageListBackgroundColor = QColor(messageListBackgroundColorString.split(" ")[0].toInt(), messageListBackgroundColorString.split(" ")[1].toInt(), messageListBackgroundColorString.split(" ")[2].toInt());
+    ui->messageListWidget->setStyleSheet(QString("background-color: rgb(%1, %2, %3)").arg(messageListBackgroundColor.red()).arg(messageListBackgroundColor.green()).arg(messageListBackgroundColor.blue()));
+
+    QString senderInfoColorString = settings->value("VIEW/SENDERINFOCOLOR").toString();
+    senderInfoColor = QColor(senderInfoColorString.split(" ")[0].toInt(), senderInfoColorString.split(" ")[1].toInt(), senderInfoColorString.split(" ")[2].toInt());
+
+    QString messageTextColorString = settings->value("VIEW/MESSAGETEXTCOLOR").toString();
+    messageTextColor = QColor(messageTextColorString.split(" ")[0].toInt(), messageTextColorString.split(" ")[1].toInt(), messageTextColorString.split(" ")[2].toInt());
 
     ui->serverSettingsButton->setText("Server: " + serverIP + " " + QString::number(serverPort));
 
@@ -57,10 +90,12 @@ Client::Client(QWidget *parent) :
     connect(ui->saveHistoryButton, SIGNAL(triggered()), this, SLOT(onSaveHistoryButtonTriggered()));
     connect(ui->exitButton, SIGNAL(triggered()), this, SLOT(onExitButtonTriggered()));
     connect(ui->usernameSettingsButton, SIGNAL(triggered()), this, SLOT(onUsernameSettingsButtonTriggered()));
-    connect(ui->actionUser_photo, SIGNAL(triggered()), this, SLOT(onUserPhotoSettingsButtonTriggered()));
+    connect(ui->userPhotoSettingsButton, SIGNAL(triggered()), this, SLOT(onUserPhotoSettingsButtonTriggered()));
     connect(ui->serverSettingsButton, SIGNAL(triggered()), this, SLOT(onServerSettingsButtonTriggered()));
     connect(ui->messageListWidget, SIGNAL(rightClickOnMessage(QMouseEvent*)), this, SLOT(onMessageClicked(QMouseEvent*)));
     connect(ui->userListWidget, SIGNAL(rightClick(QPoint)), this, SLOT(onUserItemClicked(QPoint)));
+    connect(ui->backgroundColorSettingsButton, SIGNAL(triggered()), this, SLOT(onBackgroundColorSettingsButtonTriggered()));
+    connect(ui->messageColorSettingsButton, SIGNAL(triggered()), this, SLOT(onMessageColorSettingsButtonTriggered()));
 
     QAction* helpAction = new QAction("Help", ui->menubar);
     ui->menubar->addAction(helpAction);
@@ -75,6 +110,12 @@ Client::Client(QWidget *parent) :
     connect(statusIdleCheckBox, SIGNAL(clicked()), this, SLOT(onStatusIdleButtonTriggered()));
     connect(statusDoNotDisturbCheckBox, SIGNAL(clicked()), this, SLOT(onStatusDoNotDisturbButtonTriggered()));
     connect(statusOtherCheckBox, SIGNAL(clicked()), this, SLOT(onStatusOtherButtonTriggered()));
+
+    QWidgetAction *showSenderIPButton, *showMessageTimeButton;
+    addButtonToViewMenu(&showSenderIPCheckBox, &showSenderIPButton, "Show sender IP");
+    addButtonToViewMenu(&showMessageTimeCheckBox, &showMessageTimeButton, "Show message time");
+    connect(showSenderIPCheckBox, SIGNAL(clicked()), this, SLOT(onShowSenderIPButtonTriggered()));
+    connect(showMessageTimeCheckBox, SIGNAL(clicked()), this, SLOT(onShowMessageTimeButtonTriggered()));
 
     userSocket = new QSslSocket;
 
@@ -110,7 +151,7 @@ void Client::setUpSocket() {
     }
     QSslCertificate ssl_cert(cert);
     QList<QSslError> l;
-    l << QSslError(QSslError::SelfSignedCertificate, ssl_cert);
+    l << QSslError(QSslError::HostNameMismatch, ssl_cert);
     userSocket->ignoreSslErrors(l);
     QList<QSslCertificate> listCA;
     listCA.append(ssl_cert);
@@ -122,7 +163,7 @@ void Client::setUpSocket() {
 
 void Client::connectToServer() {
     if (userStatus == "Disconnected") {
-//        setUpSocket();
+        setUpSocket();
 //
         userStatus = userStatusBeforeDisconnect;
         userSocket->connectToHost(serverIP, serverPort);
@@ -210,12 +251,10 @@ void Client::sendToServer(const QString& sendType, const QString& message) {
         userSocket->write(messageData);
     } else if (sendType == "USERPHOTO") {
         out << quint16(0) << sendType << userPhoto;
-        qDebug() << userPhoto.size();
         out.device()->seek(0);
         out << quint16(messageData.size() - sizeof(quint16));
         userSocket->write(messageData);
     } else if (sendType == "PHOTO") {
-        qDebug() << "Sending photo";
         QPixmap photo = QPixmap(message);
         out << quint16(0) << sendType << photo;
         out.device()->seek(0);
@@ -250,11 +289,14 @@ void Client::slotReadyRead() {
             if (userStatus != "Do Not Disturb" && senderName != username) {
                 newMessageSound->play();
             }
-            addMessageToMessageListWidget("<b>" + messageTime.toString() + "</b> " + "<b>[" + senderIP + " : " + senderName + "]</b> " + messageText);
+            Message messageData = {messageTime.toString(), senderIP, senderName, messageText};
+//            addMessageToMessageListWidget("<b>" + messageTime.toString() + "</b> " + "<b>[" + senderIP + " : " + senderName + "]</b> " + messageText);
+            addMessageToMessageListWidget(messageData);
             nextBlockSize = 0;
-
-            QDomElement newMessage = message(document, messageTime.toString(), senderIP, senderName, messageText);
-            domElement.appendChild(newMessage);
+            if (!messageText.isEmpty()) {
+                QDomElement newMessage = message(document, messageTime.toString(), senderIP, senderName, messageText);
+                domElement.appendChild(newMessage);
+            }
         } else if (inType == "USERLIST") {
             ui->userListWidget->clear();
             int userListSize;
@@ -307,34 +349,70 @@ void Client::slotReadyRead() {
             nextBlockSize = 0;
         } else if (inType == "PHOTO") {
             QPixmap sendedPhoto = QPixmap();
-            in >> sendedPhoto;
+            QString senderIP;
+            QString senderName;
+            QTime messageTime;
+            in >> messageTime >> senderIP >> senderName >> sendedPhoto;
             addPhotoToMessageListWidget(sendedPhoto);
             nextBlockSize = 0;
             QPixmap photoCopy = sendedPhoto.scaled(240, 320);
-            QDomElement newPhoto = photo(document, photoCopy);
+            QDomElement newPhoto = photo(document, messageTime.toString(), senderIP, senderName, photoCopy);
             domElement.appendChild(newPhoto);
         }
     }
 }
 
-void Client::addMessageToMessageListWidget(const QString& messageText) {
+void Client::addMessageToMessageListWidget(Message messageData) {
+    QString finalMessage = constructMessage(messageData);
+
+    QString str = "";
+    for (int i = 0; i < finalMessage.length() + 120; ++i) {
+        str += " ";
+    }
+
     QListWidgetItem* messageItem = new QListWidgetItem();
-    QTextEdit *messageLabel = new QTextEdit(messageText);
-    messageLabel->setAlignment(Qt::AlignVCenter);
-    messageItem->setSizeHint(QSize(0, 30));
+    QLabel *messageLabel = new QLabel(finalMessage);
+
     ui->messageListWidget->addItem(messageItem);
     ui->messageListWidget->setItemWidget(messageItem, messageLabel);
     ui->messageListWidget->scrollToBottom();
 
-//    QString str = "";
-//    for (int i = 0; i < messageText.length() + 120; ++i) {
-//        str += " ";
-//    }
-//    QListWidgetItem* messageItem = new QListWidgetItem();
-//    QLabel *messageLabel = new QLabel(messageText);
-//    ui->messageListWidget->addItem(messageItem);
-//    ui->messageListWidget->setItemWidget(messageItem, messageLabel);
-//    ui->messageListWidget->scrollToBottom();
+    messageList.append(messageData);
+    messageLabelList.append(messageLabel);
+
+    //    QListWidgetItem* messageItem = new QListWidgetItem();
+    //    QTextEdit *messageLabel = new QTextEdit(finalMessage);
+    //    messageLabel->setAlignment(Qt::AlignVCenter);
+    //    messageItem->setSizeHint(QSize(0, 30));
+    //    ui->messageListWidget->addItem(messageItem);
+    //    ui->messageListWidget->setItemWidget(messageItem, messageLabel);
+    //    ui->messageListWidget->scrollToBottom();
+}
+
+QString Client::constructMessage(Message messageData) {
+    QString strSenderInfoColor = QString("color: rgb(%1, %2, %3)").arg(senderInfoColor.red()).arg(senderInfoColor.green()).arg(senderInfoColor.blue());
+    QString strMessageTextColor = QString("color: rgb(%1, %2, %3)").arg(messageTextColor.red()).arg(messageTextColor.green()).arg(messageTextColor.blue());
+    QString constructedMessage = (isMessageTimeEnabled ? "<b>" + messageData.messageTime + "</b> " : "")
+                            + QString("<span style=\"") + strSenderInfoColor + "\">"
+                            + "<b>["
+                            + (isSenderIPEnabled ? messageData.senderIP + " : " : "")
+                            + messageData.senderName
+                            + "</b>]</span> "
+                            + QString("<span style=\"") + strMessageTextColor + "\">"
+                            + messageData.messageText
+                            + "</span>";
+    return constructedMessage;
+}
+void Client::addMessageToMessageListWidget(const QString& messageText) {
+    QString str = "";
+    for (int i = 0; i < messageText.length() + 120; ++i) {
+        str += " ";
+    }
+    QListWidgetItem* messageItem = new QListWidgetItem();
+    QLabel *messageLabel = new QLabel(messageText);
+    ui->messageListWidget->addItem(messageItem);
+    ui->messageListWidget->setItemWidget(messageItem, messageLabel);
+    ui->messageListWidget->scrollToBottom();
 }
 
 void Client::addPhotoToMessageListWidget(QPixmap photo) {
@@ -359,12 +437,15 @@ QDomElement Client::message(QDomDocument* domDoc, const QString& strTime, const 
     return domElement;
 }
 
-QDomElement Client::photo(QDomDocument* domDoc, QPixmap sendedPhoto) {
-    QDomElement domElement = makeElement(domDoc, "photo", "");
+QDomElement Client::photo(QDomDocument* domDoc, const QString& strTime, const QString& strIP, const QString& strName, QPixmap sendedPhoto) {
+    QDomElement domElement = makeElement(domDoc, "message", "");
     QBuffer buffer;
     buffer.open(QIODevice::WriteOnly);
     sendedPhoto.save(&buffer, "PNG");
-    domElement.appendChild(makeElement(domDoc, "Base64", QString(buffer.data().toBase64())));
+    domElement.appendChild(makeElement(domDoc, "time", strTime));
+    domElement.appendChild(makeElement(domDoc, "IP", strIP));
+    domElement.appendChild(makeElement(domDoc, "name", strName));
+    domElement.appendChild(makeElement(domDoc, "text", QString(buffer.data().toBase64())));
     return domElement;
 }
 
@@ -453,6 +534,8 @@ void Client::onDisconnectButtonTriggered() {
 void Client::onSaveHistoryButtonTriggered() {
     QBoxLayout* boxLayout = new QBoxLayout(QBoxLayout::TopToBottom);
     QBoxLayout* fileNameLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+    QBoxLayout* passwordLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+
 
     QLabel *fileNameLabel = new QLabel();
     fileNameLabel->setText("File name:");
@@ -462,7 +545,19 @@ void Client::onSaveHistoryButtonTriggered() {
     fileNameLine->setText("MessageHistory");
     fileNameLayout->addWidget(fileNameLine);
 
+    QLabel *passwordLabel = new QLabel();
+    passwordLabel->setText("Password:");
+    passwordLayout->addWidget(passwordLabel);
+
+    passwordLine = new QLineEdit();
+    passwordLine->setEchoMode(QLineEdit::Password);
+    passwordLayout->addWidget(passwordLine);
+
+    QCheckBox *passwordCheckbox = new QCheckBox();
+    passwordLayout->addWidget(passwordCheckbox);
+
     boxLayout->addLayout(fileNameLayout);
+    boxLayout->addLayout(passwordLayout);
 
     QDialog *modalDialog = new QDialog(this);
     modalDialog->setModal(true);
@@ -471,6 +566,7 @@ void Client::onSaveHistoryButtonTriggered() {
 
     QPushButton *saveMessageHistoryButton = new QPushButton("Save");
     boxLayout->addWidget(saveMessageHistoryButton);
+    connect(passwordCheckbox, SIGNAL(stateChanged(int)), this, SLOT(changePasswordView(int)));
     connect(saveMessageHistoryButton, SIGNAL(clicked()), modalDialog, SLOT(accept()));
 
     modalDialog->setLayout(boxLayout);
@@ -480,6 +576,14 @@ void Client::onSaveHistoryButtonTriggered() {
     }
 
     delete modalDialog;
+}
+
+void Client::changePasswordView(int state) {
+    if (!state) {
+        passwordLine->setEchoMode(QLineEdit::Password);
+    } else {
+        passwordLine->setEchoMode(QLineEdit::Normal);
+    }
 }
 
 void Client::onExitButtonTriggered() {
@@ -500,7 +604,7 @@ void Client::onHelpButtonTriggered() {
     authorPictureLabel->setScaledContents(true);
 
     addLabelToDialog(&authorName, 18, "Author name: Andrey Sivokho", infoLayout);
-    addLabelToDialog(&buildDate, 18, "Build date: 10.11.2022", infoLayout);
+    addLabelToDialog(&buildDate, 18, "Build date: " + date, infoLayout);
     addLabelToDialog(&buildVersion, 18, "Build Qt version: 5.15.2", infoLayout);
     addLabelToDialog(&launchVersion, 18, "Launch Qt version: " + QString(qVersion()), infoLayout);
 
@@ -693,23 +797,25 @@ void Client::onStatusOtherButtonTriggered() {
     modalDialog->setLayout(boxLayout);
     if (modalDialog->exec() == QDialog::Accepted) {
         customUserStatus = customStatusLine->text();
-        if (customUserStatus.length() > 16) {
-            QString statusOtherCheckBoxText = "";
-            for (int i = 0; i < 16; ++i) {
-                statusOtherCheckBoxText += customUserStatus[i];
-            }
-            statusOtherCheckBoxText += "...";
-            statusOtherCheckBox->setText(statusOtherCheckBoxText);
-        } else {
-           statusOtherCheckBox->setText(customUserStatus);
-        }
-
+        statusOtherCheckBox->setText(getShortStatus(customUserStatus));
         updateStatusCheckBoxes(customUserStatus);
         updateUserStatus(customUserStatus);
         settings->setValue("USER/CUSTOMSTATUS", customUserStatus);
     }
 
     delete modalDialog;
+}
+
+QString Client::getShortStatus(QString status) {
+    if (status.length() > 16) {
+        QString shorterStatusText = "";
+        for (int i = 0; i < 16; ++i) {
+            shorterStatusText += customUserStatus[i];
+        }
+        shorterStatusText += "...";
+        return shorterStatusText;
+    }
+    return status;
 }
 
 void Client::updateStatusCheckBoxes(QString newStatus) {
@@ -784,20 +890,20 @@ void Client::onUserItemClicked(QPoint pos) {
 
 void Client::addStatusButtonToMenu(QCheckBox** checkBox, QWidgetAction** widgetAction, const QString& checkBoxText, bool isChecked) {
     *checkBox = new QCheckBox(ui->menuStatus);
-    if (checkBoxText.length() > 16) {
-        QString newCheckBoxText = "";
-        for (int i = 0; i < 16; ++i) {
-            newCheckBoxText += checkBoxText[i];
-        }
-        newCheckBoxText += "...";
-        (*checkBox)->setText(newCheckBoxText);
-    } else {
-       (*checkBox)->setText(checkBoxText);
-    }
+    (*checkBox)->setText(getShortStatus(checkBoxText));
     (*checkBox)->setChecked(isChecked);
     *widgetAction = new QWidgetAction(ui->menuStatus);
     (*widgetAction)->setDefaultWidget(*checkBox);
     ui->menuStatus->addAction(*widgetAction);
+}
+
+void Client::addButtonToViewMenu(QCheckBox** checkBox, QWidgetAction** widgetAction, const QString& checkBoxText) {
+    *checkBox = new QCheckBox(ui->menuView);
+    (*checkBox)->setText(checkBoxText);
+    (*checkBox)->setChecked(true);
+    *widgetAction = new QWidgetAction(ui->menuView);
+    (*widgetAction)->setDefaultWidget(*checkBox);
+    ui->menuView->addAction(*widgetAction);
 }
 
 void Client::createUserInfoDialog(const QString& usernameInfo, const QString& userIPInfo, const QString& userConnectionTimeInfo, const QString& userStatusInfo, const QPixmap& userPhotoInfo) {
@@ -842,4 +948,74 @@ void Client::addLabelToDialog(QLabel** label, const int fontSize, const QString&
     (*label)->setFont(font);
     (*label)->setText(labelText);
     boxLayout->addWidget(*label);
+}
+
+void Client::onShowMessageTimeButtonTriggered() {
+    isMessageTimeEnabled = !isMessageTimeEnabled;
+    updateMessages();
+}
+
+void Client::onShowSenderIPButtonTriggered() {
+    isSenderIPEnabled = !isSenderIPEnabled;
+    updateMessages();
+}
+
+void Client::updateMessages() {
+    for (int i = 0; i < messageLabelList.length(); ++i) {
+        messageLabelList[i]->setText(constructMessage(messageList[i]));
+    }
+}
+
+void Client::onBackgroundColorSettingsButtonTriggered() {
+    QColor newBackgroundColor = QColorDialog::getColor(messageListBackgroundColor);
+    if (newBackgroundColor.isValid()) {
+        messageListBackgroundColor = newBackgroundColor;
+        ui->messageListWidget->setStyleSheet(QString("background-color: rgb(%1, %2, %3)").arg(messageListBackgroundColor.red()).arg(messageListBackgroundColor.green()).arg(messageListBackgroundColor.blue()));
+        settings->setValue("VIEW/BACKGROUNDCOLOR", QString("%1 %2 %3").arg(messageListBackgroundColor.red()).arg(messageListBackgroundColor.green()).arg(messageListBackgroundColor.blue()));
+    }
+}
+
+void Client::onMessageColorSettingsButtonTriggered() {
+    QBoxLayout* boxLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+    QPushButton *senderInfoColorSettingsButton = new QPushButton("Sender info color");
+    senderInfoColorSettingsButton->setStyleSheet(QString("color: rgb(%1, %2, %3)").arg(senderInfoColor.red()).arg(senderInfoColor.green()).arg(senderInfoColor.blue()));
+    QPushButton *messageTextColorSettingsButton = new QPushButton("Message text color");
+    messageTextColorSettingsButton->setStyleSheet(QString("color: rgb(%1, %2, %3)").arg(messageTextColor.red()).arg(messageTextColor.green()).arg(messageTextColor.blue()));
+    QPushButton *closeButton = new QPushButton("Close");
+
+    boxLayout->addWidget(senderInfoColorSettingsButton);
+    boxLayout->addWidget(messageTextColorSettingsButton);
+    boxLayout->addWidget(closeButton);
+
+    QDialog *modalDialog = new QDialog(this);
+    modalDialog->setMinimumWidth(200);
+    modalDialog->setWindowTitle("Message color settings");
+
+    connect(senderInfoColorSettingsButton, SIGNAL(clicked()), this, SLOT(onSenderInfoColorSettingsButtonClicked()));
+    connect(messageTextColorSettingsButton, SIGNAL(clicked()), this, SLOT(onMessageTextColorSettingsButtonClicked()));
+    connect(closeButton, SIGNAL(clicked()), modalDialog, SLOT(accept()));
+
+    modalDialog->setLayout(boxLayout);
+    modalDialog->exec();
+    delete modalDialog;
+}
+
+void Client::onSenderInfoColorSettingsButtonClicked() {
+    QColor newSenderInfoColor = QColorDialog::getColor(senderInfoColor);
+    if (newSenderInfoColor.isValid()) {
+        senderInfoColor = newSenderInfoColor;
+        qobject_cast<QPushButton*>(QObject::sender())->setStyleSheet(QString("color: rgb(%1, %2, %3)").arg(senderInfoColor.red()).arg(senderInfoColor.green()).arg(senderInfoColor.blue()));
+        updateMessages();
+        settings->setValue("VIEW/SENDERINFOCOLOR", QString("%1 %2 %3").arg(senderInfoColor.red()).arg(senderInfoColor.green()).arg(senderInfoColor.blue()));
+    }
+}
+
+void Client::onMessageTextColorSettingsButtonClicked() {
+    QColor newMessageTextColor = QColorDialog::getColor(messageTextColor);
+    if (newMessageTextColor.isValid()) {
+        messageTextColor = newMessageTextColor;
+        qobject_cast<QPushButton*>(QObject::sender())->setStyleSheet(QString("color: rgb(%1, %2, %3)").arg(messageTextColor.red()).arg(messageTextColor.green()).arg(messageTextColor.blue()));
+        updateMessages();
+        settings->setValue("VIEW/MESSAGETEXTCOLOR", QString("%1 %2 %3").arg(messageTextColor.red()).arg(messageTextColor.green()).arg(messageTextColor.blue()));
+    }
 }

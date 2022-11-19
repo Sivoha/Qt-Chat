@@ -276,6 +276,7 @@ Makefile: ../Server.pro D:/Qt/5.15.2/mingw81_64/mkspecs/win32-g++/qmake.conf D:/
 		D:/Qt/5.15.2/mingw81_64/lib/Qt5Widgets.prl \
 		D:/Qt/5.15.2/mingw81_64/lib/Qt5Gui.prl \
 		D:/Qt/5.15.2/mingw81_64/lib/Qt5Network.prl \
+		D:/Qt/5.15.2/mingw81_64/lib/Qt5Xml.prl \
 		D:/Qt/5.15.2/mingw81_64/lib/Qt5Core.prl \
 		D:/Qt/5.15.2/mingw81_64/lib/qtmain.prl \
 		D:/Qt/5.15.2/mingw81_64/mkspecs/features/build_pass.prf
@@ -486,6 +487,7 @@ D:/Qt/5.15.2/mingw81_64/mkspecs/features/lex.prf:
 D:/Qt/5.15.2/mingw81_64/lib/Qt5Widgets.prl:
 D:/Qt/5.15.2/mingw81_64/lib/Qt5Gui.prl:
 D:/Qt/5.15.2/mingw81_64/lib/Qt5Network.prl:
+D:/Qt/5.15.2/mingw81_64/lib/Qt5Xml.prl:
 D:/Qt/5.15.2/mingw81_64/lib/Qt5Core.prl:
 D:/Qt/5.15.2/mingw81_64/lib/qtmain.prl:
 D:/Qt/5.15.2/mingw81_64/mkspecs/features/build_pass.prf:

@@ -34,5 +34,7 @@
 #include <QTextEdit>
 #include <QTextBrowser>
 #include <QSizeF>
+#include <QColor>
+#include <QColorDialog>
 
 #endif // INCLUDES_H
