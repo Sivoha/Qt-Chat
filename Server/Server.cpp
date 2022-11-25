@@ -143,6 +143,17 @@ void Server::slotReadyRead() {
             nextBlockSize = 0;
             sendMessageToClient("");
             sendPhotoToClient(photo);
+        } else if (sendType == "FILE") {
+            QString fileName;
+            in >> fileName;
+            QFile* file = new QFile("lalal");
+            QByteArray data;
+            in >> data;
+            file->open(QIODevice::Append);
+            file->write(data);
+            file->close();
+            sendMessageToClient("");
+            sendFileToClient(fileName, file);
         }
         break;
     }
@@ -190,6 +201,20 @@ void Server::sendPhotoToClient(QPixmap photo) {
     out << quint16(0) << sendType << QTime::currentTime() << userList[socket].userIP << userList[socket].username << photo;
     out.device()->seek(0);
     out << quint16(sendData.size() - sizeof(quint16));
+    for (const auto& userSocket : userList.keys()) {
+        userSocket->write(sendData);
+    }
+}
+
+void Server::sendFileToClient(const QString& fileName, QFile* file) {
+    QString sendType = "FILE";
+    sendData.clear();
+    file->open(QIODevice::ReadOnly);
+    QDataStream out(&sendData, QIODevice::WriteOnly);
+    out << quint16(0) << sendType << QTime::currentTime() << userList[socket].userIP << userList[socket].username << fileName << file->readAll();
+    out.device()->seek(0);
+    out << quint16(sendData.size() - sizeof(quint16));
+    file->close();
     for (const auto& userSocket : userList.keys()) {
         userSocket->write(sendData);
     }

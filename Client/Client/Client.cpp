@@ -83,7 +83,7 @@ Client::Client(QWidget *parent) :
     ui->serverSettingsButton->setText("Server: " + serverIP + " " + QString::number(serverPort));
 
     connect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendMessageButtonClicked()));
-    connect(ui->sendMessageButton, SIGNAL(rightClick(QMouseEvent*)), this, SLOT(onSendMessageButtonRightClicked(QMouseEvent*)));
+    connect(ui->sendMessageButton, SIGNAL(rightClick(QMouseEvent*)), this, SLOT(onSendButtonRightClicked(QMouseEvent*)));
     connect(ui->newMessageLine, SIGNAL(returnPressed()), this, SLOT(onNewMessageLineReturnPressed()));
     connect(ui->connectToServerButton, SIGNAL(triggered()), this, SLOT(onConnectToServerButtonTriggered()));
     connect(ui->disconnectButton, SIGNAL(triggered()), this, SLOT(onDisconnectButtonTriggered()));
@@ -147,7 +147,7 @@ void Client::setUpSocket() {
         file_cert.close();
     }
     else{
-        qDebug() << file_cert.errorString();
+//        qDebug() << file_cert.errorString();
     }
     QSslCertificate ssl_cert(cert);
     QList<QSslError> l;
@@ -260,6 +260,17 @@ void Client::sendToServer(const QString& sendType, const QString& message) {
         out.device()->seek(0);
         out << quint16(messageData.size() - sizeof(quint16));
         userSocket->write(messageData);
+    } else if (sendType == "FILE") {
+        QFile* file = new QFile(message);
+        QFileInfo fileInfo(*file);
+        QString fileName(fileInfo.fileName());
+        qDebug() << fileName;
+        file->open(QIODevice::ReadOnly);
+        out << quint16(0) << sendType  << file->readAll();
+        file->close();
+        out.device()->seek(0);
+        out << quint16(messageData.size() - sizeof(quint16));
+        userSocket->write(messageData);
     }
 }
 
@@ -358,6 +369,20 @@ void Client::slotReadyRead() {
             QPixmap photoCopy = sendedPhoto.scaled(240, 320);
             QDomElement newPhoto = photo(document, messageTime.toString(), senderIP, senderName, photoCopy);
             domElement.appendChild(newPhoto);
+        } else if (inType == "FILE") {
+            QString senderIP;
+            QString senderName;
+            QTime messageTime;
+            QString fileName;
+            in >> messageTime >> senderIP >> senderName >> fileName;
+            QFile* sendedFile = new QFile("fileName");
+            QByteArray fileData;
+            in >> fileData;
+            sendedFile->open(QIODevice::Append);
+            sendedFile->write(fileData);
+            sendedFile->close();
+            addFileToMessageListWidget(fileName, sendedFile);
+            nextBlockSize = 0;
         }
     }
 }
@@ -427,6 +452,15 @@ void Client::addPhotoToMessageListWidget(QPixmap photo) {
     ui->messageListWidget->scrollToBottom();
 }
 
+void Client::addFileToMessageListWidget(const QString& fileName, QFile* file) {
+    QLabel *messageLabel = new QLabel(fileName);
+    receivedFilesList[messageLabel] = file;
+    QListWidgetItem* messageItem = new QListWidgetItem(userPhoto, "fileName");
+    ui->messageListWidget->addItem(messageItem);
+    ui->messageListWidget->setItemWidget(messageItem, messageLabel);
+    ui->messageListWidget->scrollToBottom();
+}
+
 QDomElement Client::message(QDomDocument* domDoc, const QString& strTime, const QString& strIP, const QString& strName, const QString& strMessage) {
     QDomElement domElement = makeElement(domDoc, "message", "");
     domElement.appendChild(makeElement(domDoc, "time", strTime));
@@ -474,44 +508,58 @@ void Client::onSendMessageButtonClicked() {
     }
 }
 
-void Client::onSendMessageButtonRightClicked(QMouseEvent* event) {
-    QMenu actionMenu(this);
-    QAction* sendPhoto = new QAction("Send Photo", &actionMenu);
-    actionMenu.addAction(sendPhoto);
-    actionMenu.connect(sendPhoto, SIGNAL(triggered()), this, SLOT(onSendPhotoActionTriggered()));
-    actionMenu.exec(event->globalPos());
-}
-
-void Client::onSendPhotoButtonRightClicked(QMouseEvent* event) {
+void Client::onSendButtonRightClicked(QMouseEvent* event) {
     QMenu actionMenu(this);
     QAction* sendMessage = new QAction("Send Message", &actionMenu);
+    QAction* sendPhoto = new QAction("Send Photo", &actionMenu);
+    QAction* sendFile = new QAction("Send File", &actionMenu);
     actionMenu.addAction(sendMessage);
+    actionMenu.addAction(sendPhoto);
+    actionMenu.addAction(sendFile);
     actionMenu.connect(sendMessage, SIGNAL(triggered()), this, SLOT(onSendMessageActionTriggered()));
+    actionMenu.connect(sendPhoto, SIGNAL(triggered()), this, SLOT(onSendPhotoActionTriggered()));
+    actionMenu.connect(sendFile, SIGNAL(triggered()), this, SLOT(onSendFileActionTriggered()));
     actionMenu.exec(event->globalPos());
 }
 
 void Client::onSendMessageActionTriggered() {
-    disconnect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendPhotoButtonClicked()));
+    disconnectSendButton();
     ui->newMessageLine->setDisabled(false);
-    disconnect(ui->sendMessageButton, SIGNAL(rightClick(QMouseEvent*)), this, SLOT(onSendPhotoButtonRightClicked(QMouseEvent*)));
     connect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendMessageButtonClicked()));
-    connect(ui->sendMessageButton, SIGNAL(rightClick(QMouseEvent*)), this, SLOT(onSendMessageButtonRightClicked(QMouseEvent*)));
     ui->sendMessageButton->setText("Send message");
 }
 
 void Client::onSendPhotoActionTriggered() {
-    disconnect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendMessageButtonClicked()));
+    disconnectSendButton();
     ui->newMessageLine->setDisabled(true);
-    disconnect(ui->sendMessageButton, SIGNAL(rightClick(QMouseEvent*)), this, SLOT(onSendMessageButtonRightClicked(QMouseEvent*)));
     connect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendPhotoButtonClicked()));
-    connect(ui->sendMessageButton, SIGNAL(rightClick(QMouseEvent*)), this, SLOT(onSendPhotoButtonRightClicked(QMouseEvent*)));
     ui->sendMessageButton->setText("Send photo");
+}
+
+void Client::onSendFileActionTriggered() {
+    disconnectSendButton();
+    ui->newMessageLine->setDisabled(true);
+    connect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendFileButtonClicked()));
+    ui->sendMessageButton->setText("Send file");
+}
+
+void Client::disconnectSendButton() {
+    disconnect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendMessageButtonClicked()));
+    disconnect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendPhotoButtonClicked()));
+    disconnect(ui->sendMessageButton, SIGNAL(clicked()), this, SLOT(onSendFileButtonClicked()));
 }
 
 void Client::onSendPhotoButtonClicked() {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Choose Photo"), "/home", tr("Images (*.png)"));
     if (!fileName.isEmpty()) {
         sendToServer("PHOTO", fileName);
+    }
+}
+
+void Client::onSendFileButtonClicked() {
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Choose File"), "/home");
+    if (!fileName.isEmpty()) {
+        sendToServer("FILE", fileName);
     }
 }
 
@@ -838,7 +886,7 @@ void Client::updateUserStatus(QString newStatus) {
 void Client::onMessageClicked(QMouseEvent* event) {
     QListWidgetItem* selectedMessage = ui->messageListWidget->itemAt(event->pos());
     selectedMessageLabel = dynamic_cast<QLabel*>(ui->messageListWidget->itemWidget(selectedMessage));
-    if (selectedMessageLabel->text().isEmpty()) {
+    if (selectedMessageLabel->pixmap()) {
         QMenu actionMenu(this);
         QAction* openInFullSizeAction = new QAction("Open in full size", &actionMenu);
         QAction* savePhotoAction = new QAction("Save photo", &actionMenu);
@@ -847,6 +895,8 @@ void Client::onMessageClicked(QMouseEvent* event) {
         actionMenu.connect(openInFullSizeAction, SIGNAL(triggered()), this, SLOT(onOpenInFullSizeActionTriggered()));
         actionMenu.connect(savePhotoAction, SIGNAL(triggered()), this, SLOT(onSavePhotoActionTriggered()));
         actionMenu.exec(event->globalPos());
+    } else if (selectedMessageLabel->text().isEmpty()) {
+        qDebug() << "LALAL";
     }
 }
 

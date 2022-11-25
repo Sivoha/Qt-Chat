@@ -21,10 +21,11 @@ public:
 private slots:
     void onSendMessageButtonClicked();
     void onSendPhotoButtonClicked();
-    void onSendMessageButtonRightClicked(QMouseEvent*);
-    void onSendPhotoButtonRightClicked(QMouseEvent*);
+    void onSendFileButtonClicked();
+    void onSendButtonRightClicked(QMouseEvent*);
     void onSendMessageActionTriggered();
     void onSendPhotoActionTriggered();
+    void onSendFileActionTriggered();
     void onNewMessageLineReturnPressed();
 
     void onConnectToServerButtonTriggered();
@@ -106,12 +107,16 @@ private:
     QString getShortStatus(QString);
     void updateStatusCheckBoxes(QString);
     void setDisconnectedStatus();
+    void disconnectSendButton();
 
     void addMessageToMessageListWidget(Message);
     QString constructMessage(Message);
     void addMessageToMessageListWidget(const QString&);
     void updateMessages();
     void addPhotoToMessageListWidget(QPixmap);
+    void addFileToMessageListWidget(const QString&, QFile*);
+    QMap<QLabel*, QFile*> receivedFilesList;
+
     void addStatusButtonToMenu(QCheckBox**, QWidgetAction**, const QString&, bool);
     void addButtonToViewMenu(QCheckBox**, QWidgetAction**, const QString&);
     void createUserInfoDialog(const QString&, const QString&, const QString&, const QString&, const QPixmap&);

@@ -21,6 +21,7 @@ private:
 
     void sendMessageToClient(const QString&);
     void sendPhotoToClient(QPixmap);
+    void sendFileToClient(const QString&, QFile *);
     void sendUserListToClient();
     void sendUserInfoToClient(const QString&);
     void sendUsernameChangeLog(const QString&, const QString&);
