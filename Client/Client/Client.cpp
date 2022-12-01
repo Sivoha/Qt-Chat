@@ -70,6 +70,8 @@ Client::Client(QWidget *parent) :
     isSenderIPEnabled = settings->value("VIEW/SHOWIP").toBool();
     isMessageTimeEnabled = settings->value("VIEW/SHOWTIME").toBool();
 
+    fileIcon = QPixmap(fileIconPath);
+
     QString messageListBackgroundColorString = settings->value("VIEW/BACKGROUNDCOLOR").toString();
     messageListBackgroundColor = QColor(messageListBackgroundColorString.split(" ")[0].toInt(), messageListBackgroundColorString.split(" ")[1].toInt(), messageListBackgroundColorString.split(" ")[2].toInt());
     ui->messageListWidget->setStyleSheet(QString("background-color: rgb(%1, %2, %3)").arg(messageListBackgroundColor.red()).arg(messageListBackgroundColor.green()).arg(messageListBackgroundColor.blue()));
@@ -182,7 +184,7 @@ void Client::disconnectFromServer() {
         settings->setValue("USER/STATUS", userStatus);
         userSocket->disconnectFromHost();
         setDisconnectedStatus();
-        addMessageToMessageListWidget(boldCurrentTime() + " Disconnected from" + serverIP + " " + QString::number(serverPort));
+        addMessageToMessageListWidget(boldCurrentTime() + " Disconnected from " + serverIP + " " + QString::number(serverPort));
         ui->userListWidget->clear();
     } else {
         addMessageToMessageListWidget(boldCurrentTime() + " You are not connected to server");
@@ -211,7 +213,7 @@ void Client::slotConnected() {
 
     updateWindowStatus();
     ui->serverSettingsButton->setText("Server: " + serverIP + " " + QString::number(serverPort));
-    addMessageToMessageListWidget(boldCurrentTime() + " Connected to" + serverIP + " " + QString::number(serverPort));
+    addMessageToMessageListWidget(boldCurrentTime() + " Connected to " + serverIP + " " + QString::number(serverPort));
 }
 
 void Client::slotError(QAbstractSocket::SocketError /*error*/) {
@@ -266,7 +268,7 @@ void Client::sendToServer(const QString& sendType, const QString& message) {
         QString fileName(fileInfo.fileName());
         qDebug() << fileName;
         file->open(QIODevice::ReadOnly);
-        out << quint16(0) << sendType  << file->readAll();
+        out << quint16(0) << sendType << fileName << file->readAll();
         file->close();
         out.device()->seek(0);
         out << quint16(messageData.size() - sizeof(quint16));
@@ -364,6 +366,9 @@ void Client::slotReadyRead() {
             QString senderName;
             QTime messageTime;
             in >> messageTime >> senderIP >> senderName >> sendedPhoto;
+            if (userStatus != "Do Not Disturb" && senderName != username) {
+                newMessageSound->play();
+            }
             addPhotoToMessageListWidget(sendedPhoto);
             nextBlockSize = 0;
             QPixmap photoCopy = sendedPhoto.scaled(240, 320);
@@ -375,11 +380,20 @@ void Client::slotReadyRead() {
             QTime messageTime;
             QString fileName;
             in >> messageTime >> senderIP >> senderName >> fileName;
-            QFile* sendedFile = new QFile("fileName");
+            if (userStatus != "Do Not Disturb" && senderName != username) {
+                newMessageSound->play();
+            }
+            QFile* sendedFile = new QFile("a/" + fileName);
             QByteArray fileData;
             in >> fileData;
             sendedFile->open(QIODevice::Append);
             sendedFile->write(fileData);
+            sendedFile->close();
+            sendedFile->open(QIODevice::ReadOnly);
+            QString fileID = QString::number(qrand() % 100000 + 1);
+            QDomElement newFile = file(document, messageTime.toString(), senderIP, senderName, sendedFile, fileID);
+            QFile::copy(sendedFile->fileName(), "files/" + fileID);
+            domElement.appendChild(newFile);
             sendedFile->close();
             addFileToMessageListWidget(fileName, sendedFile);
             nextBlockSize = 0;
@@ -397,6 +411,9 @@ void Client::addMessageToMessageListWidget(Message messageData) {
 
     QListWidgetItem* messageItem = new QListWidgetItem();
     QLabel *messageLabel = new QLabel(finalMessage);
+//    QFont font = messageLabel->font();
+//    font.setPointSize(10);
+    messageLabel->setFont(QFont("Times", 10));
 
     ui->messageListWidget->addItem(messageItem);
     ui->messageListWidget->setItemWidget(messageItem, messageLabel);
@@ -428,6 +445,7 @@ QString Client::constructMessage(Message messageData) {
                             + "</span>";
     return constructedMessage;
 }
+
 void Client::addMessageToMessageListWidget(const QString& messageText) {
     QString str = "";
     for (int i = 0; i < messageText.length() + 120; ++i) {
@@ -453,11 +471,11 @@ void Client::addPhotoToMessageListWidget(QPixmap photo) {
 }
 
 void Client::addFileToMessageListWidget(const QString& fileName, QFile* file) {
-    QLabel *messageLabel = new QLabel(fileName);
-    receivedFilesList[messageLabel] = file;
-    QListWidgetItem* messageItem = new QListWidgetItem(userPhoto, "fileName");
+//    QLabel *messageLabel = new QLabel();
+    QListWidgetItem* messageItem = new QListWidgetItem(fileIcon, fileName);
+    receivedFilesList[messageItem] = file;
     ui->messageListWidget->addItem(messageItem);
-    ui->messageListWidget->setItemWidget(messageItem, messageLabel);
+//    ui->messageListWidget->setItemWidget(messageItem, messageLabel);
     ui->messageListWidget->scrollToBottom();
 }
 
@@ -472,14 +490,25 @@ QDomElement Client::message(QDomDocument* domDoc, const QString& strTime, const 
 }
 
 QDomElement Client::photo(QDomDocument* domDoc, const QString& strTime, const QString& strIP, const QString& strName, QPixmap sendedPhoto) {
-    QDomElement domElement = makeElement(domDoc, "message", "");
+    QDomElement domElement = makeElement(domDoc, "photo", "");
     QBuffer buffer;
     buffer.open(QIODevice::WriteOnly);
     sendedPhoto.save(&buffer, "PNG");
     domElement.appendChild(makeElement(domDoc, "time", strTime));
     domElement.appendChild(makeElement(domDoc, "IP", strIP));
     domElement.appendChild(makeElement(domDoc, "name", strName));
-    domElement.appendChild(makeElement(domDoc, "text", QString(buffer.data().toBase64())));
+    domElement.appendChild(makeElement(domDoc, "Base64", QString(buffer.data().toBase64())));
+    return domElement;
+}
+
+QDomElement Client::file(QDomDocument* domDoc, const QString& strTime, const QString& strIP, const QString& strName, QFile* sendedFile, const QString& fileID) {
+    QDomElement domElement = makeElement(domDoc, "file", "");
+    domElement.appendChild(makeElement(domDoc, "time", strTime));
+    domElement.appendChild(makeElement(domDoc, "IP", strIP));
+    domElement.appendChild(makeElement(domDoc, "name", strName));
+    domElement.appendChild(makeElement(domDoc, "fileName", sendedFile->fileName()));
+    domElement.appendChild(makeElement(domDoc, "MD5", QString(fileChecksum(sendedFile))));
+    domElement.appendChild(makeElement(domDoc, "ID", fileID));
     return domElement;
 }
 
@@ -500,6 +529,12 @@ void Client::saveMessageHistory(const QString& fileName) {
         QTextStream(&file) << document->toString();
         file.close();
     }
+}
+
+QByteArray Client::fileChecksum(QFile* sendedFile) {
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    hash.addData(sendedFile);
+    return hash.result().toHex();
 }
 
 void Client::onSendMessageButtonClicked() {
@@ -884,19 +919,28 @@ void Client::updateUserStatus(QString newStatus) {
 }
 
 void Client::onMessageClicked(QMouseEvent* event) {
-    QListWidgetItem* selectedMessage = ui->messageListWidget->itemAt(event->pos());
-    selectedMessageLabel = dynamic_cast<QLabel*>(ui->messageListWidget->itemWidget(selectedMessage));
-    if (selectedMessageLabel->pixmap()) {
+    selectedMessage = ui->messageListWidget->itemAt(event->pos());
+    if (ui->messageListWidget->itemWidget(selectedMessage)) {
+        selectedMessageLabel = dynamic_cast<QLabel*>(ui->messageListWidget->itemWidget(selectedMessage));
+        if (selectedMessageLabel->pixmap()) {
+            QMenu actionMenu(this);
+            QAction* openInFullSizeAction = new QAction("Open in full size", &actionMenu);
+            QAction* savePhotoAction = new QAction("Save photo", &actionMenu);
+            actionMenu.addAction(openInFullSizeAction);
+            actionMenu.addAction(savePhotoAction);
+            actionMenu.connect(openInFullSizeAction, SIGNAL(triggered()), this, SLOT(onOpenInFullSizeActionTriggered()));
+            actionMenu.connect(savePhotoAction, SIGNAL(triggered()), this, SLOT(onSavePhotoActionTriggered()));
+            actionMenu.exec(event->globalPos());
+        }
+    } else {
         QMenu actionMenu(this);
-        QAction* openInFullSizeAction = new QAction("Open in full size", &actionMenu);
-        QAction* savePhotoAction = new QAction("Save photo", &actionMenu);
-        actionMenu.addAction(openInFullSizeAction);
-        actionMenu.addAction(savePhotoAction);
-        actionMenu.connect(openInFullSizeAction, SIGNAL(triggered()), this, SLOT(onOpenInFullSizeActionTriggered()));
-        actionMenu.connect(savePhotoAction, SIGNAL(triggered()), this, SLOT(onSavePhotoActionTriggered()));
+        QAction* openInDefaultApplicationAction = new QAction("Open file", &actionMenu);
+        QAction* saveFileAction = new QAction("Save file", &actionMenu);
+        actionMenu.addAction(openInDefaultApplicationAction);
+        actionMenu.addAction(saveFileAction);
+        actionMenu.connect(openInDefaultApplicationAction, SIGNAL(triggered()), this, SLOT(onOpenInDefaultApplicationActionTriggered()));
+        actionMenu.connect(saveFileAction, SIGNAL(triggered()), this, SLOT(onSaveFileActionTriggered()));
         actionMenu.exec(event->globalPos());
-    } else if (selectedMessageLabel->text().isEmpty()) {
-        qDebug() << "LALAL";
     }
 }
 
@@ -928,6 +972,19 @@ void Client::onSavePhotoActionTriggered() {
     QString savePhotoPath = QFileDialog::getSaveFileName(0, "Save photo", "/home", "*.png", &strFilter);
     if (!savePhotoPath.isEmpty()) {
         photo->save(savePhotoPath, "PNG");
+    }
+}
+
+void Client::onOpenInDefaultApplicationActionTriggered() {
+//    QDesktopServices::openUrl(QUrl::fromLocalFile("D:/Documents/C++/Qt/Chat/Client/Client/" + selectedMessage->text()));
+    QDesktopServices::openUrl("D:/Documents/C++/Qt/Chat/Client/Client/a/" + selectedMessage->text());
+}
+
+void Client::onSaveFileActionTriggered() {
+//    QString strFilter = "*.png";
+    QString saveFilePath = QFileDialog::getSaveFileName(0, "Save file");
+    if (!saveFilePath.isEmpty()) {
+        QFile::copy(receivedFilesList[selectedMessage]->fileName(), saveFilePath);
     }
 }
 

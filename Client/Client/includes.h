@@ -36,5 +36,6 @@
 #include <QSizeF>
 #include <QColor>
 #include <QColorDialog>
+#include <QDesktopServices>
 
 #endif // INCLUDES_H

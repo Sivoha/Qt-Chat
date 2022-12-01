@@ -58,6 +58,8 @@ private slots:
     void onMessageClicked(QMouseEvent*);
     void onOpenInFullSizeActionTriggered();
     void onSavePhotoActionTriggered();
+    void onOpenInDefaultApplicationActionTriggered();
+    void onSaveFileActionTriggered();
 
     void slotConnected();
     void slotReadyRead();
@@ -86,6 +88,7 @@ private:
 
     QLineEdit *passwordLine;
 
+    QListWidgetItem* selectedMessage;
     QLabel* selectedMessageLabel;
 
     QSettings* settings;
@@ -94,8 +97,10 @@ private:
     QDomElement domElement;
 
     QDomElement photo(QDomDocument*, const QString&, const QString&, const QString&, QPixmap);
+    QDomElement file(QDomDocument*, const QString&, const QString&, const QString&, QFile*, const QString&);
     QDomElement message(QDomDocument*, const QString&, const QString&, const QString&, const QString&);
     QDomElement makeElement(QDomDocument*, const QString&, const QString&);
+    QByteArray fileChecksum(QFile*);
 
     void setUpSocket();
     void connectToServer();
@@ -115,7 +120,7 @@ private:
     void updateMessages();
     void addPhotoToMessageListWidget(QPixmap);
     void addFileToMessageListWidget(const QString&, QFile*);
-    QMap<QLabel*, QFile*> receivedFilesList;
+    QMap<QListWidgetItem*, QFile*> receivedFilesList;
 
     void addStatusButtonToMenu(QCheckBox**, QWidgetAction**, const QString&, bool);
     void addButtonToViewMenu(QCheckBox**, QWidgetAction**, const QString&);
@@ -132,9 +137,11 @@ private:
     bool isNewUsernameActive;
 
     QPixmap userPhoto;
+    QPixmap fileIcon;
     QString newUserPhotoPath;
     QString userPhotoPath;
     QString defaultUserPhotoPath = "userphoto.png";
+    QString fileIconPath = "fileicon.png";
 
     QString userStatus;
     QString customUserStatus;

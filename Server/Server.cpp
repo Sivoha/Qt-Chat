@@ -146,7 +146,8 @@ void Server::slotReadyRead() {
         } else if (sendType == "FILE") {
             QString fileName;
             in >> fileName;
-            QFile* file = new QFile("lalal");
+            qDebug() << "received" << fileName;
+            QFile* file = new QFile("a/" + fileName);
             QByteArray data;
             in >> data;
             file->open(QIODevice::Append);
@@ -154,6 +155,7 @@ void Server::slotReadyRead() {
             file->close();
             sendMessageToClient("");
             sendFileToClient(fileName, file);
+            nextBlockSize = 0;
         }
         break;
     }
