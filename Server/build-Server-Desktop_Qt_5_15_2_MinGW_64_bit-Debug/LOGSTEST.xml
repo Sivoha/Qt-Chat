@@ -1,0 +1,23 @@
+<!DOCTYPE log-history>
+<log-history>
+ <log>
+  <time>17:00:27</time>
+  <text>User42 connected</text>
+ </log>
+ <log>
+  <time>17:02:05</time>
+  <text>test disconnected</text>
+ </log>
+ <log>
+  <time>17:02:12</time>
+  <text>User18468 connected</text>
+ </log>
+ <log>
+  <time>17:02:14</time>
+  <text>test disconnected</text>
+ </log>
+ <log>
+  <time>17:02:25</time>
+  <text>User6335 connected</text>
+ </log>
+</log-history>

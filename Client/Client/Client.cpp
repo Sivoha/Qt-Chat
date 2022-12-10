@@ -8,7 +8,7 @@ Client::Client(QWidget *parent) :
     date = QDate::currentDate().toString("dd.MM.yy");
     this->setWindowTitle("Disconnected");
     ui->setupUi(this);
-
+    ui->statusBar->showMessage("lol", 1000000000);
     settings = new QSettings("settings.ini", QSettings::IniFormat);
 
     document = new QDomDocument("message-history");
@@ -47,6 +47,10 @@ Client::Client(QWidget *parent) :
         settings->setValue("VIEW/SHOWTIME", true);
     }
 
+    if (!settings->contains("VIEW/SHOWSTATUSBAR")) {
+        settings->setValue("VIEW/SHOWSTATUSBAR", true);
+    }
+
     if (!settings->contains("VIEW/BACKGROUNDCOLOR")) {
         settings->setValue("VIEW/BACKGROUNDCOLOR", "0 0 0");
     }
@@ -59,6 +63,10 @@ Client::Client(QWidget *parent) :
         settings->setValue("VIEW/MESSAGETEXTCOLOR", "255 255 255");
     }
 
+    if (!settings->contains("SETTINGS/AUTOMATICFILEACCEPT")) {
+        settings->setValue("SETTINGS/AUTOMATICFILEACCEPT", true);
+    }
+
     serverIP = settings->value("SERVER/IP", "").toString();
     serverPort = settings->value("SERVER/PORT", "").toUInt();
     userStatusBeforeDisconnect = settings->value("USER/STATUS", "").toString();
@@ -69,8 +77,15 @@ Client::Client(QWidget *parent) :
     userPhoto = QPixmap(userPhotoPath);
     isSenderIPEnabled = settings->value("VIEW/SHOWIP").toBool();
     isMessageTimeEnabled = settings->value("VIEW/SHOWTIME").toBool();
+    isStatusBarEnabled = settings->value("VIEW/SHOWSTATUSBAR").toBool();
+    isAutomaticFileAcceptEnabled = settings->value("SETTINGS/AUTOMATICFILEACCEPT").toBool();
+
+    ui->statusBar->setHidden(!isStatusBarEnabled);
 
     fileIcon = QPixmap(fileIconPath);
+
+    ui->openFileButton->setVisible(false);
+    ui->backToChatButton->setVisible(false);
 
     QString messageListBackgroundColorString = settings->value("VIEW/BACKGROUNDCOLOR").toString();
     messageListBackgroundColor = QColor(messageListBackgroundColorString.split(" ")[0].toInt(), messageListBackgroundColorString.split(" ")[1].toInt(), messageListBackgroundColorString.split(" ")[2].toInt());
@@ -95,29 +110,37 @@ Client::Client(QWidget *parent) :
     connect(ui->userPhotoSettingsButton, SIGNAL(triggered()), this, SLOT(onUserPhotoSettingsButtonTriggered()));
     connect(ui->serverSettingsButton, SIGNAL(triggered()), this, SLOT(onServerSettingsButtonTriggered()));
     connect(ui->messageListWidget, SIGNAL(rightClickOnMessage(QMouseEvent*)), this, SLOT(onMessageClicked(QMouseEvent*)));
-    connect(ui->userListWidget, SIGNAL(rightClick(QPoint)), this, SLOT(onUserItemClicked(QPoint)));
+    connect(ui->userListWidget, SIGNAL(rightClick(QMouseEvent*)), this, SLOT(onUserItemClicked(QMouseEvent*)));
     connect(ui->backgroundColorSettingsButton, SIGNAL(triggered()), this, SLOT(onBackgroundColorSettingsButtonTriggered()));
     connect(ui->messageColorSettingsButton, SIGNAL(triggered()), this, SLOT(onMessageColorSettingsButtonTriggered()));
+    connect(ui->viewMessageHistoryButton, SIGNAL(triggered()), this, SLOT(onViewMessageHistoryButtonTriggered()));
+    connect(ui->backToChatButton, SIGNAL(triggered()), this, SLOT(onBackToChatButtonTriggered()));
+    connect(ui->openFileButton, SIGNAL(triggered()), this, SLOT(onOpenFileButtonTriggered()));
 
-    QAction* helpAction = new QAction("Help", ui->menubar);
+    helpAction = new QAction("Help", ui->menubar);
     ui->menubar->addAction(helpAction);
     ui->menubar->connect(helpAction, SIGNAL(triggered()), this, SLOT(onHelpButtonTriggered()));
 
-    QWidgetAction *statusOnlineButton, *statusIdleButton, *statusDoNotDisturbButton, *statusOtherButton;
-    addStatusButtonToMenu(&statusOnlineCheckBox, &statusOnlineButton, "Online", userStatusBeforeDisconnect == "Online");
-    addStatusButtonToMenu(&statusIdleCheckBox, &statusIdleButton, "Idle", userStatusBeforeDisconnect == "Idle");
-    addStatusButtonToMenu(&statusDoNotDisturbCheckBox, &statusDoNotDisturbButton, "Do Not Disturb", userStatusBeforeDisconnect == "Do Not Disturb");
-    addStatusButtonToMenu(&statusOtherCheckBox, &statusOtherButton, customUserStatus, userStatusBeforeDisconnect == customUserStatus);
+    addButtonToMenu(ui->menuStatus, &statusOnlineCheckBox, &statusOnlineButton, "Online", userStatusBeforeDisconnect == "Online");
+    addButtonToMenu(ui->menuStatus, &statusIdleCheckBox, &statusIdleButton, "Idle", userStatusBeforeDisconnect == "Idle");
+    addButtonToMenu(ui->menuStatus, &statusDoNotDisturbCheckBox, &statusDoNotDisturbButton, "Do Not Disturb", userStatusBeforeDisconnect == "Do Not Disturb");
+    addButtonToMenu(ui->menuStatus, &statusOtherCheckBox, &statusOtherButton, customUserStatus, userStatusBeforeDisconnect == customUserStatus);
     connect(statusOnlineCheckBox, SIGNAL(clicked()), this, SLOT(onStatusOnlineButtonTriggered()));
     connect(statusIdleCheckBox, SIGNAL(clicked()), this, SLOT(onStatusIdleButtonTriggered()));
     connect(statusDoNotDisturbCheckBox, SIGNAL(clicked()), this, SLOT(onStatusDoNotDisturbButtonTriggered()));
     connect(statusOtherCheckBox, SIGNAL(clicked()), this, SLOT(onStatusOtherButtonTriggered()));
 
-    QWidgetAction *showSenderIPButton, *showMessageTimeButton;
-    addButtonToViewMenu(&showSenderIPCheckBox, &showSenderIPButton, "Show sender IP");
-    addButtonToViewMenu(&showMessageTimeCheckBox, &showMessageTimeButton, "Show message time");
+    addButtonToMenu(ui->menuView, &showSenderIPCheckBox, &showSenderIPButton, "Show sender IP", isSenderIPEnabled);
+    addButtonToMenu(ui->menuView, &showMessageTimeCheckBox, &showMessageTimeButton, "Show message time", isMessageTimeEnabled);
+    addButtonToMenu(ui->menuView, &showStatusBarCheckBox, &showStatusBarButton, "Show status bar", isStatusBarEnabled);
     connect(showSenderIPCheckBox, SIGNAL(clicked()), this, SLOT(onShowSenderIPButtonTriggered()));
     connect(showMessageTimeCheckBox, SIGNAL(clicked()), this, SLOT(onShowMessageTimeButtonTriggered()));
+    connect(showStatusBarCheckBox, SIGNAL(clicked()), this, SLOT(onShowStatusBarButtonTriggered()));
+
+    addButtonToMenu(ui->menuSettings, &automaticFileAcceptCheckBox, &automaticFileAcceptButton, "Automatic file accept", isAutomaticFileAcceptEnabled);
+    connect(automaticFileAcceptCheckBox, SIGNAL(clicked()), this, SLOT(onAutomaticFileAcceptButtonTriggered()));
+
+    ui->messageHistoryWidget->setVisible(false);
 
     userSocket = new QSslSocket;
 
@@ -147,9 +170,6 @@ void Client::setUpSocket() {
     if(file_cert.open(QIODevice::ReadOnly)){
         cert = file_cert.readAll();
         file_cert.close();
-    }
-    else{
-//        qDebug() << file_cert.errorString();
     }
     QSslCertificate ssl_cert(cert);
     QList<QSslError> l;
@@ -266,9 +286,18 @@ void Client::sendToServer(const QString& sendType, const QString& message) {
         QFile* file = new QFile(message);
         QFileInfo fileInfo(*file);
         QString fileName(fileInfo.fileName());
-        qDebug() << fileName;
         file->open(QIODevice::ReadOnly);
         out << quint16(0) << sendType << fileName << file->readAll();
+        file->close();
+        out.device()->seek(0);
+        out << quint16(messageData.size() - sizeof(quint16));
+        userSocket->write(messageData);
+    } else if (sendType == "FILETOUSER") {
+        QFile* file = new QFile(message.split(" ")[1]);
+        QFileInfo fileInfo(*file);
+        QString fileName(fileInfo.fileName());
+        file->open(QIODevice::ReadOnly);
+        out << quint16(0) << sendType << message.split(" ")[0] << fileName << file->readAll();
         file->close();
         out.device()->seek(0);
         out << quint16(messageData.size() - sizeof(quint16));
@@ -303,13 +332,10 @@ void Client::slotReadyRead() {
                 newMessageSound->play();
             }
             Message messageData = {messageTime.toString(), senderIP, senderName, messageText};
-//            addMessageToMessageListWidget("<b>" + messageTime.toString() + "</b> " + "<b>[" + senderIP + " : " + senderName + "]</b> " + messageText);
             addMessageToMessageListWidget(messageData);
             nextBlockSize = 0;
-            if (!messageText.isEmpty()) {
-                QDomElement newMessage = message(document, messageTime.toString(), senderIP, senderName, messageText);
-                domElement.appendChild(newMessage);
-            }
+            QDomElement newMessage = message(document, messageTime.toString(), senderIP, senderName, messageText);
+            domElement.appendChild(newMessage);
         } else if (inType == "USERLIST") {
             ui->userListWidget->clear();
             int userListSize;
@@ -369,9 +395,12 @@ void Client::slotReadyRead() {
             if (userStatus != "Do Not Disturb" && senderName != username) {
                 newMessageSound->play();
             }
+            addMessageToMessageListWidget({messageTime.toString(), senderIP, senderName, ""});
             addPhotoToMessageListWidget(sendedPhoto);
             nextBlockSize = 0;
             QPixmap photoCopy = sendedPhoto.scaled(240, 320);
+            QDomElement newMessage = message(document, messageTime.toString(), senderIP, senderName, "");
+            domElement.appendChild(newMessage);
             QDomElement newPhoto = photo(document, messageTime.toString(), senderIP, senderName, photoCopy);
             domElement.appendChild(newPhoto);
         } else if (inType == "FILE") {
@@ -386,16 +415,68 @@ void Client::slotReadyRead() {
             QFile* sendedFile = new QFile("a/" + fileName);
             QByteArray fileData;
             in >> fileData;
-            sendedFile->open(QIODevice::Append);
-            sendedFile->write(fileData);
-            sendedFile->close();
-            sendedFile->open(QIODevice::ReadOnly);
-            QString fileID = QString::number(qrand() % 100000 + 1);
-            QDomElement newFile = file(document, messageTime.toString(), senderIP, senderName, sendedFile, fileID);
-            QFile::copy(sendedFile->fileName(), "files/" + fileID);
-            domElement.appendChild(newFile);
-            sendedFile->close();
-            addFileToMessageListWidget(fileName, sendedFile);
+            if (isAutomaticFileAcceptEnabled || senderName == username) {
+                sendedFile->open(QIODevice::Append);
+                sendedFile->write(fileData);
+                sendedFile->close();
+                sendedFile->open(QIODevice::ReadOnly);
+                QString fileID = QString::number(qrand() % 100000 + 1);
+                QDomElement newMessage = message(document, messageTime.toString(), senderIP, senderName, "");
+                domElement.appendChild(newMessage);
+                QDomElement newFile = file(document, messageTime.toString(), senderIP, senderName, fileName, sendedFile, fileID);
+                QFile::copy(sendedFile->fileName(), "files/" + fileID);
+                domElement.appendChild(newFile);
+                sendedFile->close();
+                addMessageToMessageListWidget({messageTime.toString(), senderIP, senderName, ""});
+                addFileToMessageListWidget(fileName, sendedFile);
+            } else if (senderName != username) {
+                QBoxLayout* boxLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+
+                QLabel *requestLabel = new QLabel("<b>" + senderName + "</b> wants to send you a <b>" + fileName + "</b>");
+                requestLabel->setMaximumWidth(200);
+                QPushButton *acceptFileButton = new QPushButton("Accept");
+                QProgressBar *pb = new QProgressBar();
+//                pb->setVisible(false);
+                pb->setRange(0, 100);
+                pb->setValue(50);
+                pb->setMinimumWidth(200);
+                pb->setAlignment(Qt::AlignCenter);
+                QPushButton *rejectFileButton = new QPushButton("Reject");
+
+                boxLayout->addWidget(requestLabel);
+                boxLayout->addWidget(acceptFileButton);
+                boxLayout->addWidget(pb);
+                boxLayout->addWidget(rejectFileButton);
+
+                QDialog *dialog = new QDialog(this);
+                dialog->setModal(false);
+                dialog->setMinimumWidth(200);
+                dialog->setWindowTitle("File from " + senderName);
+
+                connect(acceptFileButton, SIGNAL(clicked()), dialog, SLOT(accept()));
+                connect(rejectFileButton, SIGNAL(clicked()), dialog, SLOT(reject()));
+
+                dialog->setLayout(boxLayout);
+                if (dialog->exec() == QDialog::Accepted) {
+                    pb->setValue(100);
+                    sendedFile->open(QIODevice::Append);
+                    sendedFile->write(fileData);
+                    sendedFile->close();
+                    sendedFile->open(QIODevice::ReadOnly);
+                    QString fileID = QString::number(qrand() % 100000 + 1);
+                    QDomElement newMessage = message(document, messageTime.toString(), senderIP, senderName, "");
+                    domElement.appendChild(newMessage);
+                    QDomElement newFile = file(document, messageTime.toString(), senderIP, senderName, fileName, sendedFile, fileID);
+                    QFile::copy(sendedFile->fileName(), "files/" + fileID);
+                    domElement.appendChild(newFile);
+                    sendedFile->close();
+                    addMessageToMessageListWidget({messageTime.toString(), senderIP, senderName, ""});
+                    addFileToMessageListWidget(fileName, sendedFile);
+//                    QThread::sleep(5);
+                }
+
+                delete dialog;
+            }
             nextBlockSize = 0;
         }
     }
@@ -411,8 +492,6 @@ void Client::addMessageToMessageListWidget(Message messageData) {
 
     QListWidgetItem* messageItem = new QListWidgetItem();
     QLabel *messageLabel = new QLabel(finalMessage);
-//    QFont font = messageLabel->font();
-//    font.setPointSize(10);
     messageLabel->setFont(QFont("Times", 10));
 
     ui->messageListWidget->addItem(messageItem);
@@ -421,14 +500,6 @@ void Client::addMessageToMessageListWidget(Message messageData) {
 
     messageList.append(messageData);
     messageLabelList.append(messageLabel);
-
-    //    QListWidgetItem* messageItem = new QListWidgetItem();
-    //    QTextEdit *messageLabel = new QTextEdit(finalMessage);
-    //    messageLabel->setAlignment(Qt::AlignVCenter);
-    //    messageItem->setSizeHint(QSize(0, 30));
-    //    ui->messageListWidget->addItem(messageItem);
-    //    ui->messageListWidget->setItemWidget(messageItem, messageLabel);
-    //    ui->messageListWidget->scrollToBottom();
 }
 
 QString Client::constructMessage(Message messageData) {
@@ -439,7 +510,7 @@ QString Client::constructMessage(Message messageData) {
                             + "<b>["
                             + (isSenderIPEnabled ? messageData.senderIP + " : " : "")
                             + messageData.senderName
-                            + "</b>]</span> "
+                            + "]</b></span> "
                             + QString("<span style=\"") + strMessageTextColor + "\">"
                             + messageData.messageText
                             + "</span>";
@@ -453,6 +524,7 @@ void Client::addMessageToMessageListWidget(const QString& messageText) {
     }
     QListWidgetItem* messageItem = new QListWidgetItem();
     QLabel *messageLabel = new QLabel(messageText);
+    messageLabel->setFont(QFont("Times", 10));
     ui->messageListWidget->addItem(messageItem);
     ui->messageListWidget->setItemWidget(messageItem, messageLabel);
     ui->messageListWidget->scrollToBottom();
@@ -471,11 +543,9 @@ void Client::addPhotoToMessageListWidget(QPixmap photo) {
 }
 
 void Client::addFileToMessageListWidget(const QString& fileName, QFile* file) {
-//    QLabel *messageLabel = new QLabel();
-    QListWidgetItem* messageItem = new QListWidgetItem(fileIcon, fileName);
+    QListWidgetItem* messageItem = new QListWidgetItem(fileIcon, fileName + " (" + QString::number(file->size() / 1024) + "KB)");
     receivedFilesList[messageItem] = file;
     ui->messageListWidget->addItem(messageItem);
-//    ui->messageListWidget->setItemWidget(messageItem, messageLabel);
     ui->messageListWidget->scrollToBottom();
 }
 
@@ -501,12 +571,13 @@ QDomElement Client::photo(QDomDocument* domDoc, const QString& strTime, const QS
     return domElement;
 }
 
-QDomElement Client::file(QDomDocument* domDoc, const QString& strTime, const QString& strIP, const QString& strName, QFile* sendedFile, const QString& fileID) {
+QDomElement Client::file(QDomDocument* domDoc, const QString& strTime, const QString& strIP, const QString& strName, const QString& fileName, QFile* sendedFile, const QString& fileID) {
     QDomElement domElement = makeElement(domDoc, "file", "");
     domElement.appendChild(makeElement(domDoc, "time", strTime));
     domElement.appendChild(makeElement(domDoc, "IP", strIP));
     domElement.appendChild(makeElement(domDoc, "name", strName));
-    domElement.appendChild(makeElement(domDoc, "fileName", sendedFile->fileName()));
+    domElement.appendChild(makeElement(domDoc, "fileName", fileName));
+    domElement.appendChild(makeElement(domDoc, "fileSize", QString::number(sendedFile->size() / 1024) + "KB"));
     domElement.appendChild(makeElement(domDoc, "MD5", QString(fileChecksum(sendedFile))));
     domElement.appendChild(makeElement(domDoc, "ID", fileID));
     return domElement;
@@ -604,6 +675,12 @@ void Client::onNewMessageLineReturnPressed() {
     }
 }
 
+void Client::onSendFileToUserButtonClicked() {
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Choose File"), "/home");
+    if (!fileName.isEmpty()) {
+        sendToServer("FILETOUSER", chosenUserUsername + " " + fileName);
+    }
+}
 
 void Client::onConnectToServerButtonTriggered() {
     connectToServer();
@@ -918,6 +995,11 @@ void Client::updateUserStatus(QString newStatus) {
     }
 }
 
+void Client::onAutomaticFileAcceptButtonTriggered() {
+    isAutomaticFileAcceptEnabled = !isAutomaticFileAcceptEnabled;
+    settings->setValue("SETTINGS/AUTOMATICFILEACCEPT", isAutomaticFileAcceptEnabled);
+}
+
 void Client::onMessageClicked(QMouseEvent* event) {
     selectedMessage = ui->messageListWidget->itemAt(event->pos());
     if (ui->messageListWidget->itemWidget(selectedMessage)) {
@@ -977,7 +1059,7 @@ void Client::onSavePhotoActionTriggered() {
 
 void Client::onOpenInDefaultApplicationActionTriggered() {
 //    QDesktopServices::openUrl(QUrl::fromLocalFile("D:/Documents/C++/Qt/Chat/Client/Client/" + selectedMessage->text()));
-    QDesktopServices::openUrl("D:/Documents/C++/Qt/Chat/Client/Client/a/" + selectedMessage->text());
+    QDesktopServices::openUrl("D:/Documents/C++/Qt/Chat/Client/Client/a/" + selectedMessage->text().split(" ")[0]);
 }
 
 void Client::onSaveFileActionTriggered() {
@@ -988,29 +1070,52 @@ void Client::onSaveFileActionTriggered() {
     }
 }
 
-void Client::onUserItemClicked(QPoint pos) {
-    QListWidgetItem* item = ui->userListWidget->itemAt(pos);
+void Client::onUserItemClicked(QMouseEvent* event) {
+    QListWidgetItem* item = ui->userListWidget->itemAt(event->pos());
     if (item != nullptr) {
-        sendToServer("USERINFO", item->text());
+        chosenUserUsername = item->text();
+        QMenu actionMenu(this);
+        QAction* getUserInfoAction = new QAction("Info", &actionMenu);
+        QAction* sendFileToUserAction = new QAction("Send file", &actionMenu);
+        actionMenu.addAction(getUserInfoAction);
+        if (item->text() != username) {
+            actionMenu.addAction(sendFileToUserAction);
+            actionMenu.connect(sendFileToUserAction, SIGNAL(triggered()), this, SLOT(onSendFileToUserActionTriggered()));
+        }
+        actionMenu.connect(getUserInfoAction, SIGNAL(triggered()), this, SLOT(onGetUserInfoActionTriggered()));
+        actionMenu.exec(event->globalPos());
     }
 }
 
-void Client::addStatusButtonToMenu(QCheckBox** checkBox, QWidgetAction** widgetAction, const QString& checkBoxText, bool isChecked) {
-    *checkBox = new QCheckBox(ui->menuStatus);
-    (*checkBox)->setText(getShortStatus(checkBoxText));
-    (*checkBox)->setChecked(isChecked);
-    *widgetAction = new QWidgetAction(ui->menuStatus);
-    (*widgetAction)->setDefaultWidget(*checkBox);
-    ui->menuStatus->addAction(*widgetAction);
+void Client::onGetUserInfoActionTriggered() {
+    sendToServer("USERINFO", chosenUserUsername);
 }
 
-void Client::addButtonToViewMenu(QCheckBox** checkBox, QWidgetAction** widgetAction, const QString& checkBoxText) {
-    *checkBox = new QCheckBox(ui->menuView);
+void Client::onSendFileToUserActionTriggered() {
+    QBoxLayout* boxLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+
+    QPushButton *sendFileButton = new QPushButton("Choose file");
+
+    boxLayout->addWidget(sendFileButton);
+
+    QDialog *dialog = new QDialog(this);
+    dialog->setMinimumWidth(200);
+    dialog->setWindowTitle("Send file to " + chosenUserUsername);
+
+    connect(sendFileButton, SIGNAL(clicked()), this, SLOT(onSendFileToUserButtonClicked()));
+
+    dialog->setLayout(boxLayout);
+    dialog->setModal(false);
+    dialog->show();
+}
+
+void Client::addButtonToMenu(QMenu* menu, QCheckBox** checkBox, QWidgetAction** widgetAction, const QString& checkBoxText, bool isChecked) {
+    *checkBox = new QCheckBox(menu);
     (*checkBox)->setText(checkBoxText);
-    (*checkBox)->setChecked(true);
-    *widgetAction = new QWidgetAction(ui->menuView);
+    (*checkBox)->setChecked(isChecked);
+    *widgetAction = new QWidgetAction(menu);
     (*widgetAction)->setDefaultWidget(*checkBox);
-    ui->menuView->addAction(*widgetAction);
+    menu->addAction(*widgetAction);
 }
 
 void Client::createUserInfoDialog(const QString& usernameInfo, const QString& userIPInfo, const QString& userConnectionTimeInfo, const QString& userStatusInfo, const QPixmap& userPhotoInfo) {
@@ -1059,12 +1164,20 @@ void Client::addLabelToDialog(QLabel** label, const int fontSize, const QString&
 
 void Client::onShowMessageTimeButtonTriggered() {
     isMessageTimeEnabled = !isMessageTimeEnabled;
+    settings->setValue("VIEW/SHOWTIME", isMessageTimeEnabled);
     updateMessages();
 }
 
 void Client::onShowSenderIPButtonTriggered() {
     isSenderIPEnabled = !isSenderIPEnabled;
+    settings->setValue("VIEW/SHOWIP", isSenderIPEnabled);
     updateMessages();
+}
+
+void Client::onShowStatusBarButtonTriggered() {
+    isStatusBarEnabled = !isStatusBarEnabled;
+    settings->setValue("VIEW/SHOWSTATUSBAR", isStatusBarEnabled);
+    ui->statusBar->setHidden(!isStatusBarEnabled);
 }
 
 void Client::updateMessages() {
@@ -1125,4 +1238,156 @@ void Client::onMessageTextColorSettingsButtonClicked() {
         updateMessages();
         settings->setValue("VIEW/MESSAGETEXTCOLOR", QString("%1 %2 %3").arg(messageTextColor.red()).arg(messageTextColor.green()).arg(messageTextColor.blue()));
     }
+}
+
+void Client::onOpenFileButtonTriggered() {
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Choose message history file"), "/home", tr("(*.xml)"));
+    if (!fileName.isEmpty()) {
+        openedMessagehistoryFile = new QFile(fileName);
+        ui->messageHistoryWidget->clear();
+        this->setWindowTitle(openedMessagehistoryFile->fileName());
+        parseMessageHistoryFile();
+    }
+}
+
+void Client::parseMessageHistoryFile() {
+    if(openedMessagehistoryFile->open(QIODevice::ReadOnly)) {
+        QXmlStreamReader* sr = new QXmlStreamReader(openedMessagehistoryFile);
+        QString messageTime, senderIP, senderName, messageText;
+        QString fileName, fileSize;
+        QPixmap sendedImage;
+        makeReaderShift(sr, 4);
+        do {
+            makeReaderShift(sr, 1);
+            if (sr->name() == "message") {
+                makeReaderShift(sr, 3);
+                messageTime = sr->text().toString();
+                makeReaderShift(sr, 4);
+                senderIP = sr->text().toString();
+                makeReaderShift(sr, 4);
+                senderName = sr->text().toString();
+                makeReaderShift(sr, 4);
+                messageText = sr->text().toString();
+                makeReaderShift(sr, 4);
+                Message messageData = {messageTime, senderIP, senderName, messageText};
+                addMessageToMessageHistoryWidget(messageData);
+            } else if (sr->name() == "photo") {
+                makeReaderShift(sr, 3);
+                messageTime = sr->text().toString();
+                makeReaderShift(sr, 4);
+                senderIP = sr->text().toString();
+                makeReaderShift(sr, 4);
+                senderName = sr->text().toString();
+                makeReaderShift(sr, 4);
+                messageText = sr->text().toString();
+                makeReaderShift(sr, 4);
+                sendedImage.loadFromData(QByteArray::fromBase64(messageText.toUtf8()));
+                addPhotoToMessageHistoryWidget(sendedImage);
+            } else if (sr->name() == "file") {
+                makeReaderShift(sr, 3);
+                messageTime = sr->text().toString();
+                makeReaderShift(sr, 4);
+                senderIP = sr->text().toString();
+                makeReaderShift(sr, 4);
+                senderName = sr->text().toString();
+                makeReaderShift(sr, 4);
+                fileName = sr->text().toString();
+                makeReaderShift(sr, 4);
+                fileSize = sr->text().toString();
+                addFileToMessageHistoryWidget(fileName, fileSize);
+                makeReaderShift(sr, 12);
+            }
+        } while (!sr->atEnd());
+
+        if (sr->hasError()) {
+            qDebug() << "Error:" << sr->errorString();
+        }
+        openedMessagehistoryFile->close();
+    }
+}
+
+void Client::makeReaderShift(QXmlStreamReader* reader, int shiftLength) {
+    for (int i = 0; i < shiftLength; ++i) {
+        reader->readNext();
+    }
+}
+
+void Client::addMessageToMessageHistoryWidget(Message messageData) {
+    QString finalMessage = constructMessage(messageData);
+
+    QString str = "";
+    for (int i = 0; i < finalMessage.length() + 120; ++i) {
+        str += " ";
+    }
+
+    QListWidgetItem* messageItem = new QListWidgetItem();
+    QLabel *messageLabel = new QLabel(finalMessage);
+    messageLabel->setFont(QFont("Times", 10));
+
+    ui->messageHistoryWidget->addItem(messageItem);
+    ui->messageHistoryWidget->setItemWidget(messageItem, messageLabel);
+    ui->messageHistoryWidget->scrollToBottom();
+}
+
+void Client::addPhotoToMessageHistoryWidget(QPixmap photo) {
+    QLabel *messageLabel = new QLabel();
+    messageLabel->setPixmap(photo);
+    messageLabel->setFixedSize(photo.width() > 240 ? 240 : photo.width(), photo.height() > 320 ? 320 : photo.height());
+    messageLabel->setScaledContents(true);
+    QListWidgetItem* messageItem = new QListWidgetItem();
+    messageItem->setSizeHint(QSize(messageLabel->width(), messageLabel->height()));
+    ui->messageHistoryWidget->addItem(messageItem);
+    ui->messageHistoryWidget->setItemWidget(messageItem, messageLabel);
+    ui->messageHistoryWidget->scrollToBottom();
+}
+
+void Client::addFileToMessageHistoryWidget(const QString& fileName, const QString& fileSize) {
+    QListWidgetItem* messageItem = new QListWidgetItem(fileIcon, fileName + " (" + fileSize + ")");
+    ui->messageHistoryWidget->addItem(messageItem);
+    ui->messageHistoryWidget->scrollToBottom();
+}
+
+void Client::onBackToChatButtonTriggered() {
+    switchUI(true);
+    updateWindowStatus();
+}
+
+void Client::onViewMessageHistoryButtonTriggered() {
+    switchUI(false);
+    if (openedMessagehistoryFile == nullptr) {
+        this->setWindowTitle("View message history");
+    } else {
+        this->setWindowTitle(openedMessagehistoryFile->fileName());
+    }
+}
+
+void Client::switchUI(bool switchValue) {
+    ui->menuSettings->menuAction()->setVisible(switchValue);
+
+    ui->backgroundColorSettingsButton->setVisible(switchValue);
+    ui->messageColorSettingsButton->setVisible(switchValue);
+    ui->viewMessageHistoryButton->setVisible(switchValue);
+    automaticFileAcceptButton->setVisible(switchValue);
+    statusOnlineButton->setVisible(switchValue);
+    statusIdleButton->setVisible(switchValue);
+    statusDoNotDisturbButton->setVisible(switchValue);
+    statusOtherButton->setVisible(switchValue);
+    showSenderIPButton->setVisible(switchValue);
+    showMessageTimeButton->setVisible(switchValue);
+    showStatusBarButton->setVisible(switchValue);
+
+    ui->connectToServerButton->setVisible(switchValue);
+    ui->disconnectButton->setVisible(switchValue);
+    ui->saveHistoryButton->setVisible(switchValue);
+
+    ui->newMessageLine->setVisible(switchValue);
+    ui->userListWidget->setVisible(switchValue);
+    ui->sendMessageButton->setVisible(switchValue);
+    ui->statusBar->setVisible(switchValue);
+
+    ui->openFileButton->setVisible(!switchValue);
+    ui->backToChatButton->setVisible(!switchValue);
+
+    ui->messageListWidget->setVisible(switchValue);
+    ui->messageHistoryWidget->setVisible(!switchValue);
 }

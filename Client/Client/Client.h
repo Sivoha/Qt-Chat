@@ -33,6 +33,7 @@ private slots:
     void onSaveHistoryButtonTriggered();
     void changePasswordView(int);
     void onExitButtonTriggered();
+    void onOpenFileButtonTriggered();
 
     void onServerSettingsButtonTriggered();
     void onUsernameSettingsButtonTriggered();
@@ -43,17 +44,24 @@ private slots:
     void onStatusIdleButtonTriggered();
     void onStatusDoNotDisturbButtonTriggered();
     void onStatusOtherButtonTriggered();
+    void onAutomaticFileAcceptButtonTriggered();
 
     void onShowSenderIPButtonTriggered();
     void onShowMessageTimeButtonTriggered();
+    void onShowStatusBarButtonTriggered();
     void onBackgroundColorSettingsButtonTriggered();
     void onMessageColorSettingsButtonTriggered();
     void onSenderInfoColorSettingsButtonClicked();
     void onMessageTextColorSettingsButtonClicked();
+    void onViewMessageHistoryButtonTriggered();
+    void onBackToChatButtonTriggered();
 
     void onHelpButtonTriggered();
 
-    void onUserItemClicked(QPoint);
+    void onUserItemClicked(QMouseEvent*);
+    void onGetUserInfoActionTriggered();
+    void onSendFileToUserActionTriggered();
+    void onSendFileToUserButtonClicked();
 
     void onMessageClicked(QMouseEvent*);
     void onOpenInFullSizeActionTriggered();
@@ -68,15 +76,34 @@ private slots:
 private:
     Ui::Client *ui;
 
+    void switchUI(bool);
+
+    QFile* openedMessagehistoryFile = nullptr;
+    void parseMessageHistoryFile();
+    void makeReaderShift(QXmlStreamReader*, int);
+    void addMessageToMessageHistoryWidget(Message);
+    void addPhotoToMessageHistoryWidget(QPixmap);
+    void addFileToMessageHistoryWidget(const QString&, const QString&);
+
+    QAction* helpAction;
+
+    QWidgetAction *automaticFileAcceptButton;
+    QCheckBox *automaticFileAcceptCheckBox;
+    bool isAutomaticFileAcceptEnabled = true;
+
+    QWidgetAction *statusOnlineButton, *statusIdleButton, *statusDoNotDisturbButton, *statusOtherButton;
     QCheckBox *statusOnlineCheckBox;
     QCheckBox *statusIdleCheckBox;
     QCheckBox *statusDoNotDisturbCheckBox;
     QCheckBox *statusOtherCheckBox;
 
+    QWidgetAction *showSenderIPButton, *showMessageTimeButton, *showStatusBarButton;
     QCheckBox *showSenderIPCheckBox;
     QCheckBox *showMessageTimeCheckBox;
+    QCheckBox *showStatusBarCheckBox;
     bool isSenderIPEnabled = true;
     bool isMessageTimeEnabled = true;
+    bool isStatusBarEnabled = true;
 
     QColor messageListBackgroundColor = QColor(255, 255, 255);
     QColor senderInfoColor = QColor(0, 0, 0);
@@ -91,13 +118,15 @@ private:
     QListWidgetItem* selectedMessage;
     QLabel* selectedMessageLabel;
 
+    QString chosenUserUsername;
+
     QSettings* settings;
 
     QDomDocument* document;
     QDomElement domElement;
 
     QDomElement photo(QDomDocument*, const QString&, const QString&, const QString&, QPixmap);
-    QDomElement file(QDomDocument*, const QString&, const QString&, const QString&, QFile*, const QString&);
+    QDomElement file(QDomDocument*, const QString&, const QString&, const QString&, const QString&, QFile*, const QString&);
     QDomElement message(QDomDocument*, const QString&, const QString&, const QString&, const QString&);
     QDomElement makeElement(QDomDocument*, const QString&, const QString&);
     QByteArray fileChecksum(QFile*);
@@ -122,8 +151,7 @@ private:
     void addFileToMessageListWidget(const QString&, QFile*);
     QMap<QListWidgetItem*, QFile*> receivedFilesList;
 
-    void addStatusButtonToMenu(QCheckBox**, QWidgetAction**, const QString&, bool);
-    void addButtonToViewMenu(QCheckBox**, QWidgetAction**, const QString&);
+    void addButtonToMenu(QMenu*, QCheckBox**, QWidgetAction**, const QString&, bool);
     void createUserInfoDialog(const QString&, const QString&, const QString&, const QString&, const QPixmap&);
     void addLabelToDialog(QLabel**, const int, const QString&, QBoxLayout*);
 

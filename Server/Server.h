@@ -20,8 +20,10 @@ private:
     void setUpServer();
 
     void sendMessageToClient(const QString&);
+    void sendMessageToClient(const QString&, const QString&);
     void sendPhotoToClient(QPixmap);
     void sendFileToClient(const QString&, QFile *);
+    void sendFileToClient(const QString&, const QString&, QFile *);
     void sendUserListToClient();
     void sendUserInfoToClient(const QString&);
     void sendUsernameChangeLog(const QString&, const QString&);

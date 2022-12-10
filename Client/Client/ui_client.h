@@ -37,24 +37,28 @@ public:
     QAction *backgroundColorSettingsButton;
     QAction *messageColorSettingsButton;
     QAction *userPhotoSettingsButton;
+    QAction *viewMessageHistoryButton;
+    QAction *backToChatButton;
+    QAction *openFileButton;
     QWidget *centralwidget;
     QGridLayout *gridLayout;
+    SendButton *sendMessageButton;
     UserListWidget *userListWidget;
     QLineEdit *newMessageLine;
-    SendButton *sendMessageButton;
     MessageListWidget *messageListWidget;
+    MessageListWidget *messageHistoryWidget;
     QMenuBar *menubar;
     QMenu *menuFile;
     QMenu *menuSettings;
     QMenu *menuStatus;
     QMenu *menuView;
-    QStatusBar *statusbar;
+    QStatusBar *statusBar;
 
     void setupUi(QMainWindow *Client)
     {
         if (Client->objectName().isEmpty())
             Client->setObjectName(QString::fromUtf8("Client"));
-        Client->resize(757, 359);
+        Client->resize(757, 303);
         connectToServerButton = new QAction(Client);
         connectToServerButton->setObjectName(QString::fromUtf8("connectToServerButton"));
         disconnectButton = new QAction(Client);
@@ -73,10 +77,23 @@ public:
         messageColorSettingsButton->setObjectName(QString::fromUtf8("messageColorSettingsButton"));
         userPhotoSettingsButton = new QAction(Client);
         userPhotoSettingsButton->setObjectName(QString::fromUtf8("userPhotoSettingsButton"));
+        viewMessageHistoryButton = new QAction(Client);
+        viewMessageHistoryButton->setObjectName(QString::fromUtf8("viewMessageHistoryButton"));
+        backToChatButton = new QAction(Client);
+        backToChatButton->setObjectName(QString::fromUtf8("backToChatButton"));
+        openFileButton = new QAction(Client);
+        openFileButton->setObjectName(QString::fromUtf8("openFileButton"));
         centralwidget = new QWidget(Client);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         gridLayout = new QGridLayout(centralwidget);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        sendMessageButton = new SendButton(centralwidget);
+        sendMessageButton->setObjectName(QString::fromUtf8("sendMessageButton"));
+        sendMessageButton->setEnabled(false);
+        sendMessageButton->setMaximumSize(QSize(300, 16777215));
+
+        gridLayout->addWidget(sendMessageButton, 2, 1, 1, 1);
+
         userListWidget = new UserListWidget(centralwidget);
         userListWidget->setObjectName(QString::fromUtf8("userListWidget"));
         userListWidget->setMaximumSize(QSize(300, 16777215));
@@ -88,14 +105,7 @@ public:
         newMessageLine->setMinimumSize(QSize(650, 0));
         newMessageLine->setReadOnly(true);
 
-        gridLayout->addWidget(newMessageLine, 1, 0, 1, 1);
-
-        sendMessageButton = new SendButton(centralwidget);
-        sendMessageButton->setObjectName(QString::fromUtf8("sendMessageButton"));
-        sendMessageButton->setEnabled(false);
-        sendMessageButton->setMaximumSize(QSize(300, 16777215));
-
-        gridLayout->addWidget(sendMessageButton, 1, 1, 1, 1);
+        gridLayout->addWidget(newMessageLine, 2, 0, 1, 1);
 
         messageListWidget = new MessageListWidget(centralwidget);
         messageListWidget->setObjectName(QString::fromUtf8("messageListWidget"));
@@ -105,6 +115,11 @@ public:
         messageListWidget->setMovement(QListView::Static);
 
         gridLayout->addWidget(messageListWidget, 0, 0, 1, 1);
+
+        messageHistoryWidget = new MessageListWidget(centralwidget);
+        messageHistoryWidget->setObjectName(QString::fromUtf8("messageHistoryWidget"));
+
+        gridLayout->addWidget(messageHistoryWidget, 1, 0, 1, 1);
 
         Client->setCentralWidget(centralwidget);
         menubar = new QMenuBar(Client);
@@ -119,13 +134,14 @@ public:
         menuView = new QMenu(menubar);
         menuView->setObjectName(QString::fromUtf8("menuView"));
         Client->setMenuBar(menubar);
-        statusbar = new QStatusBar(Client);
-        statusbar->setObjectName(QString::fromUtf8("statusbar"));
-        Client->setStatusBar(statusbar);
+        statusBar = new QStatusBar(Client);
+        statusBar->setObjectName(QString::fromUtf8("statusBar"));
+        Client->setStatusBar(statusBar);
 
         menubar->addAction(menuFile->menuAction());
         menubar->addAction(menuSettings->menuAction());
         menubar->addAction(menuView->menuAction());
+        menuFile->addAction(openFileButton);
         menuFile->addAction(connectToServerButton);
         menuFile->addAction(disconnectButton);
         menuFile->addAction(saveHistoryButton);
@@ -136,6 +152,8 @@ public:
         menuSettings->addAction(menuStatus->menuAction());
         menuView->addAction(backgroundColorSettingsButton);
         menuView->addAction(messageColorSettingsButton);
+        menuView->addAction(viewMessageHistoryButton);
+        menuView->addAction(backToChatButton);
 
         retranslateUi(Client);
 
@@ -154,6 +172,9 @@ public:
         backgroundColorSettingsButton->setText(QCoreApplication::translate("Client", "Background color", nullptr));
         messageColorSettingsButton->setText(QCoreApplication::translate("Client", "Messages color", nullptr));
         userPhotoSettingsButton->setText(QCoreApplication::translate("Client", "User photo", nullptr));
+        viewMessageHistoryButton->setText(QCoreApplication::translate("Client", "View message history", nullptr));
+        backToChatButton->setText(QCoreApplication::translate("Client", "Back to chat", nullptr));
+        openFileButton->setText(QCoreApplication::translate("Client", "Open", nullptr));
         sendMessageButton->setText(QCoreApplication::translate("Client", "Send message", nullptr));
         menuFile->setTitle(QCoreApplication::translate("Client", "File", nullptr));
         menuSettings->setTitle(QCoreApplication::translate("Client", "Settings", nullptr));

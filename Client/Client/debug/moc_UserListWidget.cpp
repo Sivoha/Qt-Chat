@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_UserListWidget_t {
-    QByteArrayData data[4];
-    char stringdata0[31];
+    QByteArrayData data[5];
+    char stringdata0[46];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -35,10 +35,12 @@ static const qt_meta_stringdata_UserListWidget_t qt_meta_stringdata_UserListWidg
 QT_MOC_LITERAL(0, 0, 14), // "UserListWidget"
 QT_MOC_LITERAL(1, 15, 10), // "rightClick"
 QT_MOC_LITERAL(2, 26, 0), // ""
-QT_MOC_LITERAL(3, 27, 3) // "pos"
+QT_MOC_LITERAL(3, 27, 12), // "QMouseEvent*"
+QT_MOC_LITERAL(4, 40, 5) // "event"
 
     },
-    "UserListWidget\0rightClick\0\0pos"
+    "UserListWidget\0rightClick\0\0QMouseEvent*\0"
+    "event"
 };
 #undef QT_MOC_LITERAL
 
@@ -59,7 +61,7 @@ static const uint qt_meta_data_UserListWidget[] = {
        1,    1,   19,    2, 0x06 /* Public */,
 
  // signals: parameters
-    QMetaType::Void, QMetaType::QPoint,    3,
+    QMetaType::Void, 0x80000000 | 3,    4,
 
        0        // eod
 };
@@ -70,13 +72,13 @@ void UserListWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         auto *_t = static_cast<UserListWidget *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->rightClick((*reinterpret_cast< QPoint(*)>(_a[1]))); break;
+        case 0: _t->rightClick((*reinterpret_cast< QMouseEvent*(*)>(_a[1]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
         int *result = reinterpret_cast<int *>(_a[0]);
         {
-            using _t = void (UserListWidget::*)(QPoint );
+            using _t = void (UserListWidget::*)(QMouseEvent * );
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&UserListWidget::rightClick)) {
                 *result = 0;
                 return;
@@ -126,7 +128,7 @@ int UserListWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void UserListWidget::rightClick(QPoint _t1)
+void UserListWidget::rightClick(QMouseEvent * _t1)
 {
     void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
     QMetaObject::activate(this, &staticMetaObject, 0, _a);

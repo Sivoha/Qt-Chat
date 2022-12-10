@@ -15,7 +15,7 @@ public:
 protected:
     void mousePressEvent(QMouseEvent* event);
 signals:
-    void rightClick(QPoint pos);
+    void rightClick(QMouseEvent* event);
 };
 
 #endif // USERLISTWIDGET_H

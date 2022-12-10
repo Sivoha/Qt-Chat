@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_Client_t {
-    QByteArrayData data[43];
-    char stringdata0[1130];
+    QByteArrayData data[51];
+    char stringdata0[1379];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -48,33 +48,41 @@ QT_MOC_LITERAL(12, 267, 27), // "onDisconnectButtonTriggered"
 QT_MOC_LITERAL(13, 295, 28), // "onSaveHistoryButtonTriggered"
 QT_MOC_LITERAL(14, 324, 18), // "changePasswordView"
 QT_MOC_LITERAL(15, 343, 21), // "onExitButtonTriggered"
-QT_MOC_LITERAL(16, 365, 31), // "onServerSettingsButtonTriggered"
-QT_MOC_LITERAL(17, 397, 33), // "onUsernameSettingsButtonTrigg..."
-QT_MOC_LITERAL(18, 431, 34), // "onUserPhotoSettingsButtonTrig..."
-QT_MOC_LITERAL(19, 466, 30), // "onChooseUserPhotoButtonClicked"
-QT_MOC_LITERAL(20, 497, 31), // "onDefaultUserPhotoButtonClicked"
-QT_MOC_LITERAL(21, 529, 29), // "onStatusOnlineButtonTriggered"
-QT_MOC_LITERAL(22, 559, 27), // "onStatusIdleButtonTriggered"
-QT_MOC_LITERAL(23, 587, 35), // "onStatusDoNotDisturbButtonTri..."
-QT_MOC_LITERAL(24, 623, 28), // "onStatusOtherButtonTriggered"
-QT_MOC_LITERAL(25, 652, 29), // "onShowSenderIPButtonTriggered"
-QT_MOC_LITERAL(26, 682, 32), // "onShowMessageTimeButtonTriggered"
-QT_MOC_LITERAL(27, 715, 40), // "onBackgroundColorSettingsButt..."
-QT_MOC_LITERAL(28, 756, 37), // "onMessageColorSettingsButtonT..."
-QT_MOC_LITERAL(29, 794, 38), // "onSenderInfoColorSettingsButt..."
-QT_MOC_LITERAL(30, 833, 39), // "onMessageTextColorSettingsBut..."
-QT_MOC_LITERAL(31, 873, 21), // "onHelpButtonTriggered"
-QT_MOC_LITERAL(32, 895, 17), // "onUserItemClicked"
-QT_MOC_LITERAL(33, 913, 16), // "onMessageClicked"
-QT_MOC_LITERAL(34, 930, 31), // "onOpenInFullSizeActionTriggered"
-QT_MOC_LITERAL(35, 962, 26), // "onSavePhotoActionTriggered"
-QT_MOC_LITERAL(36, 989, 41), // "onOpenInDefaultApplicationAct..."
-QT_MOC_LITERAL(37, 1031, 25), // "onSaveFileActionTriggered"
-QT_MOC_LITERAL(38, 1057, 13), // "slotConnected"
-QT_MOC_LITERAL(39, 1071, 13), // "slotReadyRead"
-QT_MOC_LITERAL(40, 1085, 9), // "slotError"
-QT_MOC_LITERAL(41, 1095, 28), // "QAbstractSocket::SocketError"
-QT_MOC_LITERAL(42, 1124, 5) // "error"
+QT_MOC_LITERAL(16, 365, 25), // "onOpenFileButtonTriggered"
+QT_MOC_LITERAL(17, 391, 31), // "onServerSettingsButtonTriggered"
+QT_MOC_LITERAL(18, 423, 33), // "onUsernameSettingsButtonTrigg..."
+QT_MOC_LITERAL(19, 457, 34), // "onUserPhotoSettingsButtonTrig..."
+QT_MOC_LITERAL(20, 492, 30), // "onChooseUserPhotoButtonClicked"
+QT_MOC_LITERAL(21, 523, 31), // "onDefaultUserPhotoButtonClicked"
+QT_MOC_LITERAL(22, 555, 29), // "onStatusOnlineButtonTriggered"
+QT_MOC_LITERAL(23, 585, 27), // "onStatusIdleButtonTriggered"
+QT_MOC_LITERAL(24, 613, 35), // "onStatusDoNotDisturbButtonTri..."
+QT_MOC_LITERAL(25, 649, 28), // "onStatusOtherButtonTriggered"
+QT_MOC_LITERAL(26, 678, 36), // "onAutomaticFileAcceptButtonTr..."
+QT_MOC_LITERAL(27, 715, 29), // "onShowSenderIPButtonTriggered"
+QT_MOC_LITERAL(28, 745, 32), // "onShowMessageTimeButtonTriggered"
+QT_MOC_LITERAL(29, 778, 30), // "onShowStatusBarButtonTriggered"
+QT_MOC_LITERAL(30, 809, 40), // "onBackgroundColorSettingsButt..."
+QT_MOC_LITERAL(31, 850, 37), // "onMessageColorSettingsButtonT..."
+QT_MOC_LITERAL(32, 888, 38), // "onSenderInfoColorSettingsButt..."
+QT_MOC_LITERAL(33, 927, 39), // "onMessageTextColorSettingsBut..."
+QT_MOC_LITERAL(34, 967, 35), // "onViewMessageHistoryButtonTri..."
+QT_MOC_LITERAL(35, 1003, 27), // "onBackToChatButtonTriggered"
+QT_MOC_LITERAL(36, 1031, 21), // "onHelpButtonTriggered"
+QT_MOC_LITERAL(37, 1053, 17), // "onUserItemClicked"
+QT_MOC_LITERAL(38, 1071, 28), // "onGetUserInfoActionTriggered"
+QT_MOC_LITERAL(39, 1100, 31), // "onSendFileToUserActionTriggered"
+QT_MOC_LITERAL(40, 1132, 29), // "onSendFileToUserButtonClicked"
+QT_MOC_LITERAL(41, 1162, 16), // "onMessageClicked"
+QT_MOC_LITERAL(42, 1179, 31), // "onOpenInFullSizeActionTriggered"
+QT_MOC_LITERAL(43, 1211, 26), // "onSavePhotoActionTriggered"
+QT_MOC_LITERAL(44, 1238, 41), // "onOpenInDefaultApplicationAct..."
+QT_MOC_LITERAL(45, 1280, 25), // "onSaveFileActionTriggered"
+QT_MOC_LITERAL(46, 1306, 13), // "slotConnected"
+QT_MOC_LITERAL(47, 1320, 13), // "slotReadyRead"
+QT_MOC_LITERAL(48, 1334, 9), // "slotError"
+QT_MOC_LITERAL(49, 1344, 28), // "QAbstractSocket::SocketError"
+QT_MOC_LITERAL(50, 1373, 5) // "error"
 
     },
     "Client\0onSendMessageButtonClicked\0\0"
@@ -89,6 +97,7 @@ QT_MOC_LITERAL(42, 1124, 5) // "error"
     "onDisconnectButtonTriggered\0"
     "onSaveHistoryButtonTriggered\0"
     "changePasswordView\0onExitButtonTriggered\0"
+    "onOpenFileButtonTriggered\0"
     "onServerSettingsButtonTriggered\0"
     "onUsernameSettingsButtonTriggered\0"
     "onUserPhotoSettingsButtonTriggered\0"
@@ -98,13 +107,20 @@ QT_MOC_LITERAL(42, 1124, 5) // "error"
     "onStatusIdleButtonTriggered\0"
     "onStatusDoNotDisturbButtonTriggered\0"
     "onStatusOtherButtonTriggered\0"
+    "onAutomaticFileAcceptButtonTriggered\0"
     "onShowSenderIPButtonTriggered\0"
     "onShowMessageTimeButtonTriggered\0"
+    "onShowStatusBarButtonTriggered\0"
     "onBackgroundColorSettingsButtonTriggered\0"
     "onMessageColorSettingsButtonTriggered\0"
     "onSenderInfoColorSettingsButtonClicked\0"
     "onMessageTextColorSettingsButtonClicked\0"
+    "onViewMessageHistoryButtonTriggered\0"
+    "onBackToChatButtonTriggered\0"
     "onHelpButtonTriggered\0onUserItemClicked\0"
+    "onGetUserInfoActionTriggered\0"
+    "onSendFileToUserActionTriggered\0"
+    "onSendFileToUserButtonClicked\0"
     "onMessageClicked\0onOpenInFullSizeActionTriggered\0"
     "onSavePhotoActionTriggered\0"
     "onOpenInDefaultApplicationActionTriggered\0"
@@ -120,7 +136,7 @@ static const uint qt_meta_data_Client[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      38,   14, // methods
+      46,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -128,44 +144,52 @@ static const uint qt_meta_data_Client[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,  204,    2, 0x08 /* Private */,
-       3,    0,  205,    2, 0x08 /* Private */,
-       4,    0,  206,    2, 0x08 /* Private */,
-       5,    1,  207,    2, 0x08 /* Private */,
-       7,    0,  210,    2, 0x08 /* Private */,
-       8,    0,  211,    2, 0x08 /* Private */,
-       9,    0,  212,    2, 0x08 /* Private */,
-      10,    0,  213,    2, 0x08 /* Private */,
-      11,    0,  214,    2, 0x08 /* Private */,
-      12,    0,  215,    2, 0x08 /* Private */,
-      13,    0,  216,    2, 0x08 /* Private */,
-      14,    1,  217,    2, 0x08 /* Private */,
-      15,    0,  220,    2, 0x08 /* Private */,
-      16,    0,  221,    2, 0x08 /* Private */,
-      17,    0,  222,    2, 0x08 /* Private */,
-      18,    0,  223,    2, 0x08 /* Private */,
-      19,    0,  224,    2, 0x08 /* Private */,
-      20,    0,  225,    2, 0x08 /* Private */,
-      21,    0,  226,    2, 0x08 /* Private */,
-      22,    0,  227,    2, 0x08 /* Private */,
-      23,    0,  228,    2, 0x08 /* Private */,
-      24,    0,  229,    2, 0x08 /* Private */,
-      25,    0,  230,    2, 0x08 /* Private */,
-      26,    0,  231,    2, 0x08 /* Private */,
-      27,    0,  232,    2, 0x08 /* Private */,
-      28,    0,  233,    2, 0x08 /* Private */,
-      29,    0,  234,    2, 0x08 /* Private */,
-      30,    0,  235,    2, 0x08 /* Private */,
-      31,    0,  236,    2, 0x08 /* Private */,
-      32,    1,  237,    2, 0x08 /* Private */,
-      33,    1,  240,    2, 0x08 /* Private */,
-      34,    0,  243,    2, 0x08 /* Private */,
-      35,    0,  244,    2, 0x08 /* Private */,
-      36,    0,  245,    2, 0x08 /* Private */,
-      37,    0,  246,    2, 0x08 /* Private */,
-      38,    0,  247,    2, 0x08 /* Private */,
-      39,    0,  248,    2, 0x08 /* Private */,
-      40,    1,  249,    2, 0x08 /* Private */,
+       1,    0,  244,    2, 0x08 /* Private */,
+       3,    0,  245,    2, 0x08 /* Private */,
+       4,    0,  246,    2, 0x08 /* Private */,
+       5,    1,  247,    2, 0x08 /* Private */,
+       7,    0,  250,    2, 0x08 /* Private */,
+       8,    0,  251,    2, 0x08 /* Private */,
+       9,    0,  252,    2, 0x08 /* Private */,
+      10,    0,  253,    2, 0x08 /* Private */,
+      11,    0,  254,    2, 0x08 /* Private */,
+      12,    0,  255,    2, 0x08 /* Private */,
+      13,    0,  256,    2, 0x08 /* Private */,
+      14,    1,  257,    2, 0x08 /* Private */,
+      15,    0,  260,    2, 0x08 /* Private */,
+      16,    0,  261,    2, 0x08 /* Private */,
+      17,    0,  262,    2, 0x08 /* Private */,
+      18,    0,  263,    2, 0x08 /* Private */,
+      19,    0,  264,    2, 0x08 /* Private */,
+      20,    0,  265,    2, 0x08 /* Private */,
+      21,    0,  266,    2, 0x08 /* Private */,
+      22,    0,  267,    2, 0x08 /* Private */,
+      23,    0,  268,    2, 0x08 /* Private */,
+      24,    0,  269,    2, 0x08 /* Private */,
+      25,    0,  270,    2, 0x08 /* Private */,
+      26,    0,  271,    2, 0x08 /* Private */,
+      27,    0,  272,    2, 0x08 /* Private */,
+      28,    0,  273,    2, 0x08 /* Private */,
+      29,    0,  274,    2, 0x08 /* Private */,
+      30,    0,  275,    2, 0x08 /* Private */,
+      31,    0,  276,    2, 0x08 /* Private */,
+      32,    0,  277,    2, 0x08 /* Private */,
+      33,    0,  278,    2, 0x08 /* Private */,
+      34,    0,  279,    2, 0x08 /* Private */,
+      35,    0,  280,    2, 0x08 /* Private */,
+      36,    0,  281,    2, 0x08 /* Private */,
+      37,    1,  282,    2, 0x08 /* Private */,
+      38,    0,  285,    2, 0x08 /* Private */,
+      39,    0,  286,    2, 0x08 /* Private */,
+      40,    0,  287,    2, 0x08 /* Private */,
+      41,    1,  288,    2, 0x08 /* Private */,
+      42,    0,  291,    2, 0x08 /* Private */,
+      43,    0,  292,    2, 0x08 /* Private */,
+      44,    0,  293,    2, 0x08 /* Private */,
+      45,    0,  294,    2, 0x08 /* Private */,
+      46,    0,  295,    2, 0x08 /* Private */,
+      47,    0,  296,    2, 0x08 /* Private */,
+      48,    1,  297,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void,
@@ -197,7 +221,15 @@ static const uint qt_meta_data_Client[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QPoint,    2,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 6,    2,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
     QMetaType::Void, 0x80000000 | 6,    2,
     QMetaType::Void,
     QMetaType::Void,
@@ -205,7 +237,7 @@ static const uint qt_meta_data_Client[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 41,   42,
+    QMetaType::Void, 0x80000000 | 49,   50,
 
        0        // eod
 };
@@ -229,37 +261,45 @@ void Client::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
         case 10: _t->onSaveHistoryButtonTriggered(); break;
         case 11: _t->changePasswordView((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 12: _t->onExitButtonTriggered(); break;
-        case 13: _t->onServerSettingsButtonTriggered(); break;
-        case 14: _t->onUsernameSettingsButtonTriggered(); break;
-        case 15: _t->onUserPhotoSettingsButtonTriggered(); break;
-        case 16: _t->onChooseUserPhotoButtonClicked(); break;
-        case 17: _t->onDefaultUserPhotoButtonClicked(); break;
-        case 18: _t->onStatusOnlineButtonTriggered(); break;
-        case 19: _t->onStatusIdleButtonTriggered(); break;
-        case 20: _t->onStatusDoNotDisturbButtonTriggered(); break;
-        case 21: _t->onStatusOtherButtonTriggered(); break;
-        case 22: _t->onShowSenderIPButtonTriggered(); break;
-        case 23: _t->onShowMessageTimeButtonTriggered(); break;
-        case 24: _t->onBackgroundColorSettingsButtonTriggered(); break;
-        case 25: _t->onMessageColorSettingsButtonTriggered(); break;
-        case 26: _t->onSenderInfoColorSettingsButtonClicked(); break;
-        case 27: _t->onMessageTextColorSettingsButtonClicked(); break;
-        case 28: _t->onHelpButtonTriggered(); break;
-        case 29: _t->onUserItemClicked((*reinterpret_cast< QPoint(*)>(_a[1]))); break;
-        case 30: _t->onMessageClicked((*reinterpret_cast< QMouseEvent*(*)>(_a[1]))); break;
-        case 31: _t->onOpenInFullSizeActionTriggered(); break;
-        case 32: _t->onSavePhotoActionTriggered(); break;
-        case 33: _t->onOpenInDefaultApplicationActionTriggered(); break;
-        case 34: _t->onSaveFileActionTriggered(); break;
-        case 35: _t->slotConnected(); break;
-        case 36: _t->slotReadyRead(); break;
-        case 37: _t->slotError((*reinterpret_cast< QAbstractSocket::SocketError(*)>(_a[1]))); break;
+        case 13: _t->onOpenFileButtonTriggered(); break;
+        case 14: _t->onServerSettingsButtonTriggered(); break;
+        case 15: _t->onUsernameSettingsButtonTriggered(); break;
+        case 16: _t->onUserPhotoSettingsButtonTriggered(); break;
+        case 17: _t->onChooseUserPhotoButtonClicked(); break;
+        case 18: _t->onDefaultUserPhotoButtonClicked(); break;
+        case 19: _t->onStatusOnlineButtonTriggered(); break;
+        case 20: _t->onStatusIdleButtonTriggered(); break;
+        case 21: _t->onStatusDoNotDisturbButtonTriggered(); break;
+        case 22: _t->onStatusOtherButtonTriggered(); break;
+        case 23: _t->onAutomaticFileAcceptButtonTriggered(); break;
+        case 24: _t->onShowSenderIPButtonTriggered(); break;
+        case 25: _t->onShowMessageTimeButtonTriggered(); break;
+        case 26: _t->onShowStatusBarButtonTriggered(); break;
+        case 27: _t->onBackgroundColorSettingsButtonTriggered(); break;
+        case 28: _t->onMessageColorSettingsButtonTriggered(); break;
+        case 29: _t->onSenderInfoColorSettingsButtonClicked(); break;
+        case 30: _t->onMessageTextColorSettingsButtonClicked(); break;
+        case 31: _t->onViewMessageHistoryButtonTriggered(); break;
+        case 32: _t->onBackToChatButtonTriggered(); break;
+        case 33: _t->onHelpButtonTriggered(); break;
+        case 34: _t->onUserItemClicked((*reinterpret_cast< QMouseEvent*(*)>(_a[1]))); break;
+        case 35: _t->onGetUserInfoActionTriggered(); break;
+        case 36: _t->onSendFileToUserActionTriggered(); break;
+        case 37: _t->onSendFileToUserButtonClicked(); break;
+        case 38: _t->onMessageClicked((*reinterpret_cast< QMouseEvent*(*)>(_a[1]))); break;
+        case 39: _t->onOpenInFullSizeActionTriggered(); break;
+        case 40: _t->onSavePhotoActionTriggered(); break;
+        case 41: _t->onOpenInDefaultApplicationActionTriggered(); break;
+        case 42: _t->onSaveFileActionTriggered(); break;
+        case 43: _t->slotConnected(); break;
+        case 44: _t->slotReadyRead(); break;
+        case 45: _t->slotError((*reinterpret_cast< QAbstractSocket::SocketError(*)>(_a[1]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
         switch (_id) {
         default: *reinterpret_cast<int*>(_a[0]) = -1; break;
-        case 37:
+        case 45:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 0:
@@ -299,13 +339,13 @@ int Client::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 38)
+        if (_id < 46)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 38;
+        _id -= 46;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 38)
+        if (_id < 46)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 38;
+        _id -= 46;
     }
     return _id;
 }

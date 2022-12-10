@@ -37,5 +37,8 @@
 #include <QColor>
 #include <QColorDialog>
 #include <QDesktopServices>
+#include <QStatusBar>
+#include <QXmlStreamReader>
+#include <QProgressBar>
 
 #endif // INCLUDES_H

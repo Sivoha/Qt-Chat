@@ -266,6 +266,9 @@ debug/moc_Client.cpp: Client.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtGui/QMouseEvent \
 		D:/Qt/5.15.2/mingw81_64/include/QtCore/QDebug \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QWidget \
+		MessageListWidget.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/QTime \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/qdatetime.h \
 		includes.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QBoxLayout \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qboxlayout.h \
@@ -292,8 +295,6 @@ debug/moc_Client.cpp: Client.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qactiongroup.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QMainWindow \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qmainwindow.h \
-		D:/Qt/5.15.2/mingw81_64/include/QtCore/QTime \
-		D:/Qt/5.15.2/mingw81_64/include/QtCore/qdatetime.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtCore/QFile \
 		D:/Qt/5.15.2/mingw81_64/include/QtNetwork/QSslKey \
 		D:/Qt/5.15.2/mingw81_64/include/QtNetwork/qsslkey.h \
@@ -345,6 +346,16 @@ debug/moc_Client.cpp: Client.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QTextBrowser \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qtextbrowser.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtCore/QSizeF \
+		D:/Qt/5.15.2/mingw81_64/include/QtGui/QColor \
+		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QColorDialog \
+		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qcolordialog.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtGui/QDesktopServices \
+		D:/Qt/5.15.2/mingw81_64/include/QtGui/qdesktopservices.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/qstandardpaths.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QStatusBar \
+		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qstatusbar.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/QXmlStreamReader \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/qxmlstream.h \
 		debug/moc_predefs.h \
 		D:/Qt/5.15.2/mingw81_64/bin/moc.exe
 	D:\Qt\5.15.2\mingw81_64\bin\moc.exe $(DEFINES) --include D:/Documents/C++/Qt/Chat/Client/Client/debug/moc_predefs.h -ID:/Qt/5.15.2/mingw81_64/mkspecs/win32-g++ -ID:/Documents/C++/Qt/Chat/Client/Client -ID:/Qt/5.15.2/mingw81_64/include -ID:/Qt/5.15.2/mingw81_64/include/QtMultimedia -ID:/Qt/5.15.2/mingw81_64/include/QtWidgets -ID:/Qt/5.15.2/mingw81_64/include/QtGui -ID:/Qt/5.15.2/mingw81_64/include/QtANGLE -ID:/Qt/5.15.2/mingw81_64/include/QtNetwork -ID:/Qt/5.15.2/mingw81_64/include/QtXml -ID:/Qt/5.15.2/mingw81_64/include/QtCore -ID:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++ -ID:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32 -ID:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward -ID:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include -ID:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed -ID:/Qt/Tools/mingw810_64/x86_64-w64-mingw32/include Client.h -o debug\moc_Client.cpp
@@ -476,6 +487,8 @@ debug/moc_MessageListWidget.cpp: MessageListWidget.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtGui/QMouseEvent \
 		D:/Qt/5.15.2/mingw81_64/include/QtCore/QDebug \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QWidget \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/QTime \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/qdatetime.h \
 		debug/moc_predefs.h \
 		D:/Qt/5.15.2/mingw81_64/bin/moc.exe
 	D:\Qt\5.15.2\mingw81_64\bin\moc.exe $(DEFINES) --include D:/Documents/C++/Qt/Chat/Client/Client/debug/moc_predefs.h -ID:/Qt/5.15.2/mingw81_64/mkspecs/win32-g++ -ID:/Documents/C++/Qt/Chat/Client/Client -ID:/Qt/5.15.2/mingw81_64/include -ID:/Qt/5.15.2/mingw81_64/include/QtMultimedia -ID:/Qt/5.15.2/mingw81_64/include/QtWidgets -ID:/Qt/5.15.2/mingw81_64/include/QtGui -ID:/Qt/5.15.2/mingw81_64/include/QtANGLE -ID:/Qt/5.15.2/mingw81_64/include/QtNetwork -ID:/Qt/5.15.2/mingw81_64/include/QtXml -ID:/Qt/5.15.2/mingw81_64/include/QtCore -ID:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++ -ID:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32 -ID:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward -ID:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include -ID:/Qt/Tools/mingw810_64/lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed -ID:/Qt/Tools/mingw810_64/x86_64-w64-mingw32/include MessageListWidget.h -o debug\moc_MessageListWidget.cpp
@@ -1097,7 +1110,9 @@ ui_client.h: client.ui \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QListWidgetItem \
 		D:/Qt/5.15.2/mingw81_64/include/QtGui/QMouseEvent \
 		D:/Qt/5.15.2/mingw81_64/include/QtCore/QDebug \
-		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QWidget
+		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QWidget \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/QTime \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/qdatetime.h
 	D:\Qt\5.15.2\mingw81_64\bin\uic.exe client.ui -o ui_client.h
 
 compiler_yacc_decl_make_all:
@@ -1238,7 +1253,9 @@ debug/MessageListWidget.o: MessageListWidget.cpp MessageListWidget.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QListWidgetItem \
 		D:/Qt/5.15.2/mingw81_64/include/QtGui/QMouseEvent \
 		D:/Qt/5.15.2/mingw81_64/include/QtCore/QDebug \
-		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QWidget
+		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QWidget \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/QTime \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/qdatetime.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o debug\MessageListWidget.o MessageListWidget.cpp
 
 debug/SendButton.o: SendButton.cpp SendButton.h \
@@ -1615,6 +1632,9 @@ debug/main.o: main.cpp Client.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtGui/QMouseEvent \
 		D:/Qt/5.15.2/mingw81_64/include/QtCore/QDebug \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QWidget \
+		MessageListWidget.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/QTime \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/qdatetime.h \
 		includes.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QBoxLayout \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qboxlayout.h \
@@ -1641,8 +1661,6 @@ debug/main.o: main.cpp Client.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qactiongroup.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QMainWindow \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qmainwindow.h \
-		D:/Qt/5.15.2/mingw81_64/include/QtCore/QTime \
-		D:/Qt/5.15.2/mingw81_64/include/QtCore/qdatetime.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtCore/QFile \
 		D:/Qt/5.15.2/mingw81_64/include/QtNetwork/QSslKey \
 		D:/Qt/5.15.2/mingw81_64/include/QtNetwork/qsslkey.h \
@@ -1694,6 +1712,16 @@ debug/main.o: main.cpp Client.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QTextBrowser \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qtextbrowser.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtCore/QSizeF \
+		D:/Qt/5.15.2/mingw81_64/include/QtGui/QColor \
+		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QColorDialog \
+		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qcolordialog.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtGui/QDesktopServices \
+		D:/Qt/5.15.2/mingw81_64/include/QtGui/qdesktopservices.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/qstandardpaths.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QStatusBar \
+		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qstatusbar.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/QXmlStreamReader \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/qxmlstream.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QApplication \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qapplication.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtCore/qcoreapplication.h \
@@ -1836,6 +1864,9 @@ debug/Client.o: Client.cpp Client.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtGui/QMouseEvent \
 		D:/Qt/5.15.2/mingw81_64/include/QtCore/QDebug \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QWidget \
+		MessageListWidget.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/QTime \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/qdatetime.h \
 		includes.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QBoxLayout \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qboxlayout.h \
@@ -1862,8 +1893,6 @@ debug/Client.o: Client.cpp Client.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qactiongroup.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QMainWindow \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qmainwindow.h \
-		D:/Qt/5.15.2/mingw81_64/include/QtCore/QTime \
-		D:/Qt/5.15.2/mingw81_64/include/QtCore/qdatetime.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtCore/QFile \
 		D:/Qt/5.15.2/mingw81_64/include/QtNetwork/QSslKey \
 		D:/Qt/5.15.2/mingw81_64/include/QtNetwork/qsslkey.h \
@@ -1915,27 +1944,17 @@ debug/Client.o: Client.cpp Client.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QTextBrowser \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qtextbrowser.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtCore/QSizeF \
-		ui_client.h \
-		D:/Qt/5.15.2/mingw81_64/include/QtCore/QVariant \
-		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QApplication \
-		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qapplication.h \
-		D:/Qt/5.15.2/mingw81_64/include/QtCore/qcoreapplication.h \
-		D:/Qt/5.15.2/mingw81_64/include/QtCore/qeventloop.h \
-		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qdesktopwidget.h \
-		D:/Qt/5.15.2/mingw81_64/include/QtGui/qguiapplication.h \
-		D:/Qt/5.15.2/mingw81_64/include/QtGui/qinputmethod.h \
-		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QGridLayout \
-		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QMenu \
-		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qmenu.h \
-		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QMenuBar \
-		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qmenubar.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtGui/QColor \
+		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QColorDialog \
+		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qcolordialog.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtGui/QDesktopServices \
+		D:/Qt/5.15.2/mingw81_64/include/QtGui/qdesktopservices.h \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/qstandardpaths.h \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QStatusBar \
 		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qstatusbar.h \
-		messagelistwidget.h \
-		sendbutton.h \
-		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QPushButton \
-		D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qpushbutton.h \
-		userlistwidget.h
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/QXmlStreamReader \
+		D:/Qt/5.15.2/mingw81_64/include/QtCore/qxmlstream.h \
+		ui_client.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o debug\Client.o Client.cpp
 
 debug/moc_Client.o: debug/moc_Client.cpp 
